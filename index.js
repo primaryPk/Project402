@@ -5,7 +5,7 @@ const MusicGenerator = require('./music_generator');
 app.get('/', (req, res) => {
     var gen = new MusicGenerator("asd111");
     
-    res.send(gen.getX() + "");
+    res.send(gen.getX() + "primeeeeeeee");
 })
 
 app.listen(3000, () => {
