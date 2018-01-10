@@ -3,7 +3,7 @@ const app = express()
 const MusicGenerator = require('./music_generator');
 
 app.get('/', (req, res) => {
-    var gen = new MusicGenerator("asd111");
+    var gen = new MusicGenerator("asd111boatttt");
     
     res.send(gen.getX() + "");
 })
