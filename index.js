@@ -14,7 +14,8 @@ midi.createMelody();
 midi.createChordProgression();
 midi.createFile();
 
-// var bi = new Binuaralbeats();
+var bi = new Binuaralbeats();
+bi.midiToWav();
 
 // res.send(gen.getX() + "primeeeeeeee");
 // })

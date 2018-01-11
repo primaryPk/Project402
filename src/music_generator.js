@@ -23,6 +23,9 @@ class MusicGenerator {
     this.instNumMelody = [1, 3, 93, 41, 42, 43, 74, 69, 72];
     this.instMelody = this.random(this.instNumMelody);
     this.instChord = this.random(this.instNumChord);
+    console.log("Chord: " + this.instNameChord[this.instChord]);
+    console.log("Melody: " + this.instNameMelody[this.instMelody]);
+    
   }
 
   composeMelody(){
