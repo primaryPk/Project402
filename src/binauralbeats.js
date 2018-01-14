@@ -1,6 +1,7 @@
-const header = require('waveheader');
-const WAV = require('./wavdata');
 const fs = require('fs');
+const header = require('waveheader');
+const soundwave = require('./soundwave');
+const WAV = require('./wavdata');
 
 class Binuaralbeats {
   
@@ -13,20 +14,17 @@ class Binuaralbeats {
     this.BitsPerSample = 16;
   }
 
-  midiToWav() {
-    // let midBuffer = fs.readFileSync('./song/test.mid');
-    // let wavBuffer1 = midiToWav(midBuffer).toBuffer();
+  createWavFile() {
     
     let max_amp = 0.25;
     const wav = new WAV();
     let progression = this.parseMelody(this.music.getMelody(), this.music.getTempo());
-    wav.writeProgression(progression, max_amp, [0, 1], true);
+    wav.writeProgression(progression, max_amp, soundwave['violin'], true, true);
     
     progression = this.parseChord(this.music.getChordProgressionNote(), this.music.getTempo());
-    wav.writeProgression(progression, max_amp, [0, 1], true);
+    wav.writeProgression(progression, max_amp, soundwave['clarinet'], true);
 
-    let wavBuffer = wav.toBuffer();
-    
+    let wavBuffer = wav.toBuffer();    
 
     let file = fs.createWriteStream('./song/test.wav');
 
@@ -36,17 +34,51 @@ class Binuaralbeats {
     }))
 
     file.write(wavBuffer);
-    file.end();
+    file.end();    
 
+    // var samples = []
+
+    // var f = 698.46; // 698.46 Hertz = F4 note
+    // var samples_length = 44100;
+    // for (var i = 0; i < samples_length; i++) {
+    //   var t = i / samples_length;
+    //   var y = 0;
+    //   var A_total = 0;
+    //   for (var harm = 1; harm <= 7; harm++) {
+    //     var f2 = f * harm;
+    //     var A = 1 / harm;
+    //     A_total += A;
+    //     y += A * Math.sin(f2 * 2 * Math.PI * t);
+    //   }
+    //   samples[i] = y / A_total;
+    //   samples[i] *= (1 - 0.5 * Math.sin(2 * Math.PI * 6 * t)); // Add a low frequency amplitude modulation
+    //   samples[i] *= (1 - Math.exp(-t * 3));
+    // }
+    // samples = samples.map(el => el * 30000);
+    
     // file = fs.createWriteStream('./song/test1.wav');
 
-    // file.write(header(wavBuffer1.length, {
-    //   channels: 2,
+    // file.write(header(samples.length * 2, {
+    //   channels: 1,
     //   bitDepth: 16
     // }))
 
-    // file.write(wavBuffer1);
-    // file.end();
+    // var data = Int16Array.from(samples)
+    // var buffer;
+
+    // var size = data.length * 2 // 2 bytes per sample
+    // if (Buffer.allocUnsafe) { // Node 5+
+    //   buffer = Buffer.allocUnsafe(size)
+    // } else {
+    //   buffer = new Buffer(size)
+    // }
+
+    // data.forEach(function (value, index) {
+    //   buffer.writeInt16LE(value, index * 2)
+    // })
+
+    // file.write(buffer)
+    // file.end();    
 
   }
 

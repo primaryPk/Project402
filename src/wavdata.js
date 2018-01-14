@@ -267,7 +267,7 @@ class WAV {
     // convert signed normalized sound data to typed integer data
     // i.e. [-1, 1] -> [INT_MIN, INT_MAX]
     var amplitude = Math.pow(2, (bytesPerSample << 3) - 1) - 1;
-    var i, d;
+    var i, d;    
 
     switch (bytesPerSample) {
       case 1:
@@ -412,11 +412,12 @@ class WAV {
     note,
     time,
     amplitude = 1
-  }, channels = [], blend = true, reset = false) {
+  }, soundwave, blend = true, reset = false) {
     // creating local references to properties
     var data = this.data;
     var numChannels = this.NumChannels;
     var sampleRate = this.SampleRate;
+    var channels = [0,1];
 
     // to prevent sound artifacts
     const fadeSeconds = 0.001;
@@ -424,8 +425,6 @@ class WAV {
     // calculating properties of given note
     var semitone = WAV.semitone(note);
     var frequency = WAV.frequency(semitone)
-    var frequency_base = frequency * Math.PI * 2 / sampleRate;
-    var frequency_binuaral = (frequency + 10) * Math.PI * 2 / sampleRate;
     // var period = Math.PI * 2 / frequency;
 
     // amount of blocks to be written
@@ -449,16 +448,6 @@ class WAV {
     // f = temporary of frequency
     var i, j, k, d, f;
 
-    // by default write to all channels
-    if (channels.length === 0) {
-      // don't overwrite passed array
-      channels = [];
-
-      for (i = 0; i < numChannels; i++) {
-        channels[i] = i;
-      }
-    }
-
     // inline .indexOf() function calls into array references
     var skipChannel = [];
 
@@ -474,14 +463,22 @@ class WAV {
         d = 0;
 
 
-        if (frequency_base > 0) {
-          f = j > 0 ? frequency_base : frequency_binuaral;
-          d = amplitude * Math.sin(f * i) * ((i < fade) ? i : (i > nonZero) ? blocksOut - i + 1 : fade) / fade;
+        if (frequency > 0) {
+          f = j > 0 ? frequency : frequency+10;
+          d = soundwave(frequency, i, blocksIn, amplitude);
         }
+
 
         data[k] = d + (blend ? data[k] : 0);
       }
+      
     }
+
+    
+    // console.log(array);
+    
+
+    // console.log(data);
     // append data
     for (i = blocksIn; i < blocksOut; i++) {
       k = start + i * numChannels;
@@ -491,15 +488,15 @@ class WAV {
         d = 0;
 
         // only write non-zero data to specified channels
-        if (frequency_base > 0 || !skipChannel[j]) {
-          f = j > 0 ? frequency_base : frequency_binuaral;
-          d = amplitude * Math.sin(f * i) * ((i < fade) ? i : (i > nonZero) ? blocksOut - i + 1 : fade) / fade;
+        if (frequency > 0 || !skipChannel[j]) {
+          f = j > 0 ? frequency : frequency+10;
+          d = soundwave(frequency, i, blocksOut - blocksIn, amplitude);
         }
 
         data[k + j] = d;
       }
-    }
-
+    }    
+    
     // update header properties
     var end = Math.max(start + blocksOut * numChannels, stop) * this.BitsPerSample >>> 3;
 
@@ -516,7 +513,7 @@ class WAV {
   // (or asynchronously if offset property is specified in a note)
   // each playing for time * relativeDuration seconds
   // followed by a time * (1 - relativeDuration) second rest
-  writeProgression(notes, amplitude = 1, channels = [], blend = true, reset = false, relativeDuration = 1) {
+  writeProgression(notes, amplitude, soundwave, blend = true, reset = false, relativeDuration = 1) {
     var start = this.pointer;
 
     for (var i = 0, note, time, amp, off, secs, rest; i < notes.length; i++) {
@@ -537,7 +534,7 @@ class WAV {
           note,
           time,
           amplitude: amp === undefined ? amplitude : amp * amplitude
-        }, channels, blend, false);
+        }, soundwave, blend, false);
       } else {
         secs = time * relativeDuration;
         rest = time - secs;
@@ -546,18 +543,43 @@ class WAV {
           note: note,
           time: secs,
           amplitude: amp === undefined ? amplitude : amp * amplitude
-        }, channels, blend, false);
+        }, soundwave, blend, false);
         this.writeNote({
           note: 'REST',
           time: rest
-        }, channels, blend, false);
+        }, soundwave, blend, false);
       }
     }
 
     if (reset) {
       this.pointer = start;
     }
+
+    // var ndarrayWav = require('ndarray-wav');
+
+    // ndarrayWav.open('./song/test.wav', function (err, chunkMap, chunkArr) {
+    //   console.log(chunkMap.data.data);
+      
+    // });
+
+    
+    // var buf = new ArrayBuffer(4);
+    // // Create a data view of it
+    // var view = new DataView(buf);
+
+    // // set bytes
+    // data.forEach(function (b, i) {
+    //   view.setUint8(i, b);
+    // });
+
+    // // Read the bits as a float; note that by doing this, we're implicitly
+    // // converting it from a 32-bit float into JavaScript's native 64-bit double
+    // var num = view.getFloat32(0);
+    // // Done
+    // console.log(num);
   }
+
+  
 };
 
 module.exports = WAV;

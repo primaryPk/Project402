@@ -103,6 +103,7 @@ class MusicGenerator {
   }
 
   getTempo() {
+    this.tempo = 80;
     return this.tempo;
   }
 
