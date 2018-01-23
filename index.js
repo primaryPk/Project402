@@ -1,6 +1,5 @@
 // const express = require('express')
 // const app = express()
-const ffmpeg = require('fluent-ffmpeg');
 const MusicGenerator = require('./src/music_generator');
 const midiGenerator = require('./src/midi_generator');
 

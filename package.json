@@ -13,14 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2",
-    "fluent-ffmpeg": "^2.1.2",
-    "jsmidgen": "^0.1.5",
-    "midiconvert": "^0.4.2",
-    "ndarray-wav": "^0.2.4",
-    "scribbletune": "^0.11.2",
-    "synth-js": "^0.1.1",
-    "tonegenerator": "^0.3.0",
-    "waveheader": "0.0.2"
+    "express": "^4.16.2"
   }
 }
