@@ -1,8 +1,7 @@
+const MusicGenerator = require('./src/music_generator');
+const scribble = require('./modules/scribbletune');
 // const express = require('express')
 // const app = express()
-const MusicGenerator = require('./src/music_generator');
-const midiGenerator = require('./src/midi_generator');
-const scribble = require('./modules/scribbletune');
 
 // app.get('/', (req, res) => {
 
