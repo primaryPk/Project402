@@ -3,7 +3,7 @@
 const assert = require('assert');
 const utils = require('./utils');
 const chord = require('./chord');
-const jsmUtils = require('jsmidgen').Util;
+const jsmUtils = require('../jsmidgen').Util;
 
 /**
  * Get defauly params for a clip, such as root note, pattern etc

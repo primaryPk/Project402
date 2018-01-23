@@ -2,16 +2,21 @@
 // const app = express()
 const MusicGenerator = require('./src/music_generator');
 const midiGenerator = require('./src/midi_generator');
+const scribble = require('./modules/scribbletune');
 
 // app.get('/', (req, res) => {
 
 var music = new MusicGenerator();
 music.composeMelody();
+music.composeChordProgreesion();
 
-var midi = new midiGenerator(music);
-midi.createMelody();
-midi.createChordProgression();
-midi.createFile();
+scribble.midi(music, true, 'song/test_bi.mid');
+scribble.midi(music, false, 'song/test.mid');
+
+// var midi = new midiGenerator(music);
+// midi.createMelody();
+// midi.createChordProgression();
+// midi.createFile();
 
 // });
 
