@@ -23,6 +23,7 @@ class MusicGenerator {
     this.instNumMelody = [1, 3, 93, 41, 42, 43, 74, 69, 72];
     this.instMelody = this.random(this.instNumMelody);
     this.instChord = this.random(this.instNumChord);
+    this.instMelody = 3;
     console.log("Chord: " + this.instNameChord[this.instChord]);
     console.log("Melody: " + this.instNameMelody[this.instMelody]);
     
@@ -78,6 +79,12 @@ class MusicGenerator {
     this.melody.push(new Note('a5', 0.5, 70));
     this.melody.push(new Note('g5', 1, 70));
     this.melody.push(new Note('e5', 2, 70));
+
+    // this.melody.push(new Note('c5', 4, 70));
+    // this.melody.push(new Note('d5', 1, 70));
+    // this.melody.push(new Note('e5', 1, 70));
+    // this.melody.push(new Note('f5', 1, 70));
+
   }
 
   getMelody() {    
