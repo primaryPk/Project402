@@ -1,5 +1,6 @@
 const MusicGenerator = require('./src/music_generator');
-const scribble = require('./modules/scribbletune');
+// const scribble = require('scribbletune');
+const midi = require('./custom-modules/midi');
 // const express = require('express')
 // const app = express()
 
@@ -9,8 +10,10 @@ var music = new MusicGenerator();
 music.composeMelody();
 music.composeChordProgreesion();
 
-scribble.midi(music, true, 'song/test_bi.mid');
-scribble.midi(music, false, 'song/test.mid');
+midi(music, 'song/test_bi_r+10.mid', 10);
+midi(music, 'song/test_bi_r-10.mid', -10);
+midi(music, 'song/test.mid');
+
 
 // var midi = new midiGenerator(music);
 // midi.createMelody();

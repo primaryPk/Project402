@@ -1,5 +1,5 @@
-const scribble = require('../modules/scribbletune');
-const Note = require('./note')
+const scribble = require('scribbletune');
+
 class MusicGenerator {
 
   constructor() {
@@ -22,78 +22,36 @@ class MusicGenerator {
     this.instNumChord = [1, 3, 93, 25, 26];
     this.instNumMelody = [1, 3, 93, 41, 42, 43, 74, 69, 72];
     this.instMelody = this.random(this.instNumMelody);
-    // this.instMelody = 0;
     this.instChord = this.random(this.instNumChord);
-    // this.instChord = 2;
-    console.log("Chord: " + this.instNameChord[this.instChord]);
-    console.log("Melody: " + this.instNameMelody[this.instMelody]);
+    this.instMelody = 0;
+    this.instChord = 3;
+    // console.log("Chord: " + this.instNameChord[this.instChord]);
+    // console.log("Melody: " + this.instNameMelody[this.instMelody]);
     
   }
 
   composeMelody(){
-    // this.melody.push(new Note('c5', 0.5, 70));
-    // this.melody.push(new Note('c5', 0.5, 70));
-    // this.melody.push(new Note('d5', 1, 70));
-    // this.melody.push(new Note('e5', 2, 70));
-    
-    // this.melody.push(new Note('f5', 1, 70));
-    // this.melody.push(new Note('f5', 1, 70));
-    // this.melody.push(new Note('d5', 1, 70));
-    // this.melody.push(new Note('c5', 1, 70));
-    
-    // this.melody.push(new Note('e5', 1, 70));
-    // this.melody.push(new Note('e5', 0.5, 70));
-    // this.melody.push(new Note('g5', 0.5, 70));
-    // this.melody.push(new Note('a5', 0.5, 70));
-    // this.melody.push(new Note('b5', 1, 70));
-    // this.melody.push(new Note('c6', 0.5, 70));
-    
-    // this.melody.push(new Note('c6', 0.5, 70));
-    // this.melody.push(new Note('b5', 0.25, 70));
-    // this.melody.push(new Note('a5', 0.25, 70));
-    // this.melody.push(new Note('g5', 0.5, 70));
-    // this.melody.push(new Note('f5', 0.5, 70));
-    // this.melody.push(new Note('e5', 0.5, 70));
-    // this.melody.push(new Note('d5', 0.5, 70));
-    // this.melody.push(new Note('c5', 0.5, 70));
-    // this.melody.push(new Note('c5', 0.5, 70));
-    
-    // this.melody.push(new Note('c5', 0.5, 70));
-    // this.melody.push(new Note('c5', 0.5, 70));
-    // this.melody.push(new Note('d5', 1, 70));
-    // this.melody.push(new Note('e5', 2, 70));
-    
-    // this.melody.push(new Note('f5', 1, 70));
-    // this.melody.push(new Note('f5', 1, 70));
-    // this.melody.push(new Note('d5', 1, 70));
-    // this.melody.push(new Note('c5', 1, 70));
-    
-    // this.melody.push(new Note('e5', 1, 70));
-    // this.melody.push(new Note('e5', 0.5, 70));
-    // this.melody.push(new Note('g5', 0.5, 70));
-    // this.melody.push(new Note('a5', 0.5, 70));
-    // this.melody.push(new Note('b5', 1, 70));
-    // this.melody.push(new Note('c6', 0.5, 70));
-    
-    // this.melody.push(new Note('b5', 0.5, 70));
-    // this.melody.push(new Note('a5', 0.5, 70));
-    // this.melody.push(new Note('g5', 1, 70));
-    // this.melody.push(new Note('e5', 2, 70));
-    
-    
+    let n4 = 'x_______________';
+    let n2 = 'x_______';
+    let n1 = 'x___';
+
     // พรีมต้องแต่งตรงนี้ ตรงนี้ ยัง hardcode อยู่
     this.melody = scribble.clip({
-      notes: ['c4', 'd4', 'e4', 'e4', 'c4'],
-      pattern: 'x___'.repeat(32),
-      accentMap: 'x___x___'
+      notes: ['c5', 'd5', 'e5', 'c5', 'g5', 
+              'f5', 'e5', 'd5', 'c5', 'd5' , 'd5', 'e5',
+              'f5', 'a4', 'b4', 'c5'
+            ],
+      pattern: 'x_'.repeat(2) + 'xxx_________'
+            + 'x_'.repeat(2) + 'xxx_____' + 'x_'.repeat(2)
+            + n2 + n1 + n1 + n4
     });
   }
   
   composeChordProgreesion(){
     // พรีมต้องแต่งตรงนี้ ตรงนี้ ยัง hardcode อยู่
     this.chordProgression = scribble.clip({
-      notes: ['Cmaj', 'Fmaj', 'Gmaj', 'Cmaj'],
-      pattern: 'x_______________'.repeat(8),
+      notes: ['Cmaj7', 'Cmaj', 'Cmaj7', 'Fmaj7', 'Fmaj', 'Fmaj7', 'Dmin', 'Gmaj7', 'Cmaj7'],
+      pattern: 'x_______x_x_____'.repeat(2) + 'x___________x___' + 'x_______________',
       sizzle: true
     });
   }
@@ -103,18 +61,6 @@ class MusicGenerator {
   }
 
   getChordProgression() {
-    // นำ chordProgression ที่เป็น Array ของตัวเลข มาแปลงเป็น ตัวโน้ต ตามคอร์ด
-    // return [
-    //   ["c3", "e3", "g3", "c4"],
-    //   ["f3", "a3", "c3", "f4"],
-    //   ["g3", "b3", "d3", "g4"],
-    //   ["c3", "e3", "g3", "c4"],
-    //   ["c3", "e3", "g3", "c4"],
-    //   ["f3", "a3", "c3", "f4"],
-    //   ["g3", "b3", "d3", "g4"],
-    //   ["c3", "e3", "g3", "c4"],
-    // ]
-
     return this.chordProgression;
   }
 
@@ -127,6 +73,7 @@ class MusicGenerator {
   }
 
   getTempo() {
+    this.tempo = 78;
     return this.tempo;
   }
 
