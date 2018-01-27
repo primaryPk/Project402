@@ -10,26 +10,44 @@ function noteToFrequency(n){
 	return Math.pow(2, (n-69)/12) * 440;
 }
 
+function frequencyToNote(f) {
+	return 69 + (12 * Math.log2(f/440)); 
+}
+
 function frequentToBlend(note, shift = 10){
 	const BYTE = 128;
 	const RANGE = BYTE*BYTE;
 	const MIDDLE = RANGE / 2;
+	const MIDI_UNIT = 100 / MIDDLE;
 
-	let f = noteToFrequency(note+1) - noteToFrequency(note);
+	let f = noteToFrequency(note) + shift;
+	let d = frequencyToNote(f);
+	let cents = (d - note) * 100;
+	
+	if(cents >= 100){
+		let n = Math.floor(cents/100);
+		cents = cents % 100;
+		note += n; // New note
 
-	let dunno = (shift / (f / RANGE)) + MIDDLE;
+	} else if(cents <= -100) {
+		let n = Math.ceil(cents/100);
+		cents = cents % 100;		
+		note += n; // New note
+	}
+	
+	let blend = MIDDLE + Math.round(cents / MIDI_UNIT);
+	
+	let msb = Math.floor(blend / BYTE);
+	let lsb = Math.round(blend - (msb * BYTE));
 
-	let msb = Math.floor(dunno / BYTE);
-	let lsb = Math.round(dunno - (msb * BYTE));
-
-	return { msb: msb, lsb: lsb }
+	return { note: note, msb: msb, lsb: lsb }
 	
 }
 
 function generateTrack(channel, notes, tempo, instrument, pan, shift){
 	let track = new jsmidgen.Track();
 	track.setTempo(tempo)
-	// track.setInstrument(channel, instrument);
+	track.setInstrument(channel, instrument);
 	if (pan != null)
 		track.setPan(channel, pan);
 
@@ -41,6 +59,8 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift){
 			let blend = frequentToBlend(note, shift);
 			
 			track.setBlend(channel, blend.msb, blend.lsb);
+			noteObj.note[0] = jsmidgen.Util.noteFromMidiPitch(blend.note);
+			
 		}
 
 		if (noteObj.note) {
