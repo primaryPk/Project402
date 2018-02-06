@@ -37,21 +37,27 @@ class MusicGenerator {
 
     // พรีมต้องแต่งตรงนี้ ตรงนี้ ยัง hardcode อยู่
     this.melody = scribble.clip({
-      notes: ['c5', 'd5', 'e5', 'c5', 'g5', 
-              'f5', 'e5', 'd5', 'c5', 'd5' , 'd5', 'e5',
-              'f5', 'a4', 'b4', 'c5'
-            ],
-      pattern: 'x_'.repeat(2) + 'xxx_________'
-            + 'x_'.repeat(2) + 'xxx_____' + 'x_'.repeat(2)
-            + n2 + n1 + n1 + n4
+      // notes: ['c3', 'd3', 'e3', 'f3', 'g3', 'a3', 'b3',
+      //         'c4', 'd4', 'e4', 'f4', 'g4', 'a4', 'b4',
+      //         'c5', 'd5', 'e5', 'f5', 'g5', 'a5', 'b5', 'c6'
+      //       ],
+      notes: ['c5', 'f5', 'g5', 'c5', 'f5', 'a5', 'a5', 'g5', 'g5', 'a5', 'b5', 'c6', 'c6', 'g5', 'e5', 'c5'],
+      // pattern: 'x_'.repeat(2) + 'xxx_________'
+      //       + 'x_'.repeat(2) + 'xxx_____' + 'x_'.repeat(2)
+      //       + n2 + n1 + n1 + n4
+      pattern: n1.repeat(16)
     });
   }
   
   composeChordProgreesion(){
     // พรีมต้องแต่งตรงนี้ ตรงนี้ ยัง hardcode อยู่
     this.chordProgression = scribble.clip({
-      notes: ['Cmaj7', 'Cmaj', 'Cmaj7', 'Fmaj7', 'Fmaj', 'Fmaj7', 'Dmin', 'Gmaj7', 'Cmaj7'],
-      pattern: 'x_______x_x_____'.repeat(2) + 'x___________x___' + 'x_______________',
+      notes: [
+        'Cmaj', 'Fmaj', 'Gmaj', 'Cmaj',
+    ],
+      pattern: 'x_______________'.repeat(4),
+      // pattern: 'x_______'.repeat(14),
+      // pattern: 'x_______x_x_____'.repeat(2) + 'x___________x___' + 'x_______________',
       sizzle: true
     });
   }
