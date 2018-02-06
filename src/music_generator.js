@@ -50,14 +50,11 @@ class MusicGenerator {
   }
   
   composeChordProgreesion(){
-    // พรีมต้องแต่งตรงนี้ ตรงนี้ ยัง hardcode อยู่
     this.chordProgression = scribble.clip({
       notes: [
         'Cmaj', 'Fmaj', 'Gmaj', 'Cmaj',
-    ],
+      ],
       pattern: 'x_______________'.repeat(4),
-      // pattern: 'x_______'.repeat(14),
-      // pattern: 'x_______x_x_____'.repeat(2) + 'x___________x___' + 'x_______________',
       sizzle: true
     });
   }
