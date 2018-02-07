@@ -10,19 +10,9 @@ var music = new MusicGenerator();
 music.composeMelody();
 music.composeChordProgreesion();
 
-// midi(music, 'song/chord_' + music.instNameMelody[music.instMelody] + '.mid');
-// midi(music, 'song/chord.mid');
 midi(music, 'song/test.mid');
 midi(music, 'song/test_r+10.mid', 10);
 midi(music, 'song/test_r_10.mid', -10);
-// midi(music, 'song/test_bi_r-10_' + music.instNameMelody[music.instMelody] +'.mid', -10);
-// midi(music, 'song/test.mid');
-
-
-// var midi = new midiGenerator(music);
-// midi.createMelody();
-// midi.createChordProgression();
-// midi.createFile();
 
 // });
 

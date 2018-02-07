@@ -78,6 +78,20 @@ function frequentToBlend(note, shift = 10){
 	
 }
 
+function isMajorChord(note){
+	return (note[0] == 'c' || note[0] == 'f' || note[0] == 'g');
+}
+
+function perfectFifth(note) {
+	let note_list = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
+	let r = (note_list.indexOf(note[0]) + 2) % note_list.length;
+	if (note.length > 2){
+		return note_list[r] + note[1] + (parseInt(note[2]) - 2);
+	} else {
+		return note_list[r] + (parseInt(note[1]) - 3);
+	}
+}
+
 function generateTrack(channel, notes, tempo, instrument, pan, shift){
 	let track = new jsmidgen.Track();
 	track.setTempo(tempo)
@@ -95,9 +109,17 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift){
 				} else {					
 					let n1 = jsmidgen.Util.midiPitchFromNote(noteObj.note[0]);
 					let n3 = jsmidgen.Util.midiPitchFromNote(noteObj.note[2]);
-					let blend = blendChord(n1, n3, shift);
+					
+					let n = '';
+					if (isMajorChord(noteObj.note[0])){
+						n = noteObj.note[0][0] + (parseInt(noteObj.note[0][1])-2);
+					} else {
+						n = perfectFifth(noteObj.note[0]);
+					}					
+					
+					let blend = frequentToBlend(n, shift);
 					track.setBlend(channel, blend.msb, blend.lsb);
-					track.addNote(channel, blend.note, noteObj.length, 0, 75);
+					track.addNote(channel, blend.note, noteObj.length, 0, 20);					
 				}
 			} else {			
 				if (shift){		
@@ -107,8 +129,10 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift){
 					track.setBlend(channel, blend.msb, blend.lsb);
 					noteObj.note[0] = jsmidgen.Util.noteFromMidiPitch(blend.note);
 		
+					track.addNote(channel, noteObj.note, noteObj.length, 0, 75);
+				} else {
+					track.addNote(channel, noteObj.note, noteObj.length, 0, 87);
 				}
-				track.addNote(channel, noteObj.note, noteObj.length, 0, 100);
 			}
 		} else {
 			track.noteOff(channel, '', noteObj.length);

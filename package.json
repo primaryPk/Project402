@@ -15,6 +15,7 @@
   "dependencies": {
     "express": "^4.16.2",
     "jsmidgen": "^0.1.5",
+    "json-rules-engine": "^2.0.3",
     "scribbletune": "^0.11.2"
   }
 }
