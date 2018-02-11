@@ -1,21 +1,17 @@
 const _ = require('lodash');
 const scribble = require('scribbletune');
 const Engine = require('json-rules-engine').Engine;
-
-const n4 = 'x_______________';
-const n2 = 'x_______';
-const n1 = 'x___';
+const rule = require('./music_rules');
+const Const = require('./music_constant');
 
 class MusicGenerator {
-
+  
   constructor() {
+
     this.melody = [];
     this.chordProgression = null;
 
-    this.semitone = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
-    this.flat_notes= { 'a#': 'bb', 'c#': 'db', 'd#': 'eb', 'f#': 'gb', 'g#': 'ab' },
     this.scale = [1, 1, 0.5, 1, 1, 1, 0.5];  
-    this.chordsName = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'];
 
     this.initRule();
     this.initEngine();
@@ -30,7 +26,8 @@ class MusicGenerator {
 
   initAnything(anything) {
     if (Array.isArray(anything)) {
-      return anything[this.random(anything)];
+      // return anything[this.random(anything)]
+      return this.randomElement(anything);
     } else if (typeof anything == 'object') {
       return Math.floor(Math.random() * (anything.max - anything.min + 1)) + anything.min;
     } else {
@@ -41,46 +38,7 @@ class MusicGenerator {
   initRule() {
     let me = this;
     this.initializeRule = {
-      conditions: {
-        all: [{
-            fact: 'init',
-            path: 'KeySignature',
-            operator: 'allContains',
-            value: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F']
-          }, {
-            fact: 'init',
-            path: 'Tempo',
-            operator: 'between',
-            value: {
-              min: 0,
-              max: 127
-            }
-          },
-          // {
-          //   fact: 'init',
-          //   path: 'TimeSignature',
-          //   operator: 'allContains',
-          //   value: ['3/4', '4/4']
-          // },
-          {
-            fact: 'init',
-            path: 'InstrumentMelody',
-            operator: 'between',
-            value: {
-              min: 0,
-              max: 127
-            }
-          }, {
-            fact: 'init',
-            path: 'InstrumentChord',
-            operator: 'between',
-            value: {
-              min: 0,
-              max: 127
-            }
-          },
-        ]
-      },
+      conditions: rule.init,
       event: {
         type: 'Initialize'
       },
@@ -98,38 +56,30 @@ class MusicGenerator {
       }
     }
 
-    this.chordProgressiveRule = {
-      conditions: {
-        all: [{
-            fact: 'initSuccess',
-            operator: 'equal',
-            value: true
-          },
-          {
-            all: [{
-              fact: 'chordProgressive',
-              path: 'pattern',
-              operator: 'equal',
-              value: n4
-            }, {
-              fact: 'chordProgressive',
-              path: 'chordChunk',
-              operator: 'equal_length',
-              value: 4
-            }, {
-              fact: 'chordProgressive',
-              path: 'chordChunk',
-              operator: 'allContains',
-              value: this.chordsName
-            }]
-          }
-        ]
+    this.songPartRule = {
+      conditions: rule.songPart,
+      event: {
+        type: 'Song Part'
       },
+      priority: 9,
+      onSuccess: function (event, almanac) {
+        me.song_part = me.facts.songPart.pattern[0];
+        me.barPerPart = me.facts.songPart.TotalBarPerPart;
+      },
+      onFailure: function (event, almanac) {     
+        me.song_part = null;        
+        me.barPerPart = me.facts.songPart.TotalBarPerPart || 1;
+      }
+    };
+
+    this.chordProgressiveRule = {
+      conditions: rule.chordProgressive,
       event: {
         type: 'Chord progressive'
       },
       priority: 8,
       onSuccess: function (event, almanac) {
+        me.chordProgressive = me.facts.chordProgressive;
         almanac.addRuntimeFact('chordSuccess', true)
       },
       onFailure: function (event, almanac) {
@@ -138,30 +88,19 @@ class MusicGenerator {
     }
 
     this.melodyRule = {
-      conditions: {
-        all: [{
-          fact: 'chordSuccess',
-          operator: 'equal',
-          value: true
-        },
-        {
-          any: [{
-            fact: 'melody',
-            path: 'passingtone',
-            operator: 'equal',
-            value: true
-          }, {
-            fact: 'melody',
-            path: 'passingtone',
-            operator: 'equal',
-            value: false
-          }]
-        }]
-      },
+      conditions: rule.molody,
       event: {
         type: 'Melody'
       },
       priority: 5,
+      onSuccess: function (event, almanac) {
+        if (me.facts.melody.lastBar.pattern){
+          me.lastbar = me.randomElement(me.facts.melody.lastBar.pattern);
+        }
+      },
+      onFailure: function (event, almanac) {
+
+      }
     }
   }
 
@@ -169,6 +108,18 @@ class MusicGenerator {
     this.engine = new Engine()
     this.engine.addOperator('allContains', (facts_value, rule_value) => {
       return (typeof facts_value == 'string') ? (rule_value.indexOf(facts_value) >= 0):(_.difference(facts_value, rule_value).length === 0);
+    })
+    this.engine.addOperator('arr2D_allContains', (facts_value, rule_value) => {
+      if (Array.isArray(facts_value)) {
+        let flag = true;
+        facts_value.forEach(arr => {
+          let isContain = _.difference(arr, rule_value).length === 0;
+          if(!isContain)
+          flag = false;
+        });
+        return flag;
+      }
+      return false;
     })
     this.engine.addOperator('between', (facts_value, rule_value) => {
       if (typeof facts_value === 'number') {
@@ -185,8 +136,21 @@ class MusicGenerator {
       }
       return false;
     })
-
+    this.engine.addOperator('isStringArrayOrString', (facts_value, rule_value) => {
+      let flag = true;
+      if (Array.isArray(facts_value)) {
+        facts_value.forEach(el => {
+          if(typeof el != 'string'){
+            flag = false;
+          }
+        });
+        return flag;
+      }
+      return typeof facts_value == 'string';
+    })
+    
     this.engine.addRule(this.initializeRule);
+    this.engine.addRule(this.songPartRule);
     this.engine.addRule(this.chordProgressiveRule);
     this.engine.addRule(this.melodyRule);
     
@@ -216,8 +180,8 @@ class MusicGenerator {
     let chords = {};
     let chord_length = [0,2,2,3];
     let first_oct = this.findFirstOctaveFromNote(notes);
-    for (let i in this.chordsName){
-      chords[this.chordsName[i]] = [];
+    for (let i in Const.chordsName){
+      chords[Const.chordsName[i]] = [];
       let octave = first_oct;
       let pos = Number(i);
       for (let j in chord_length) {
@@ -226,7 +190,7 @@ class MusicGenerator {
           pos %= notes.length;
           octave += 1;
         }
-        chords[this.chordsName[i]].push(notes[pos] + "" + octave);
+        chords[Const.chordsName[i]].push(notes[pos] + octave);
       }
     }
     return chords;
@@ -234,15 +198,15 @@ class MusicGenerator {
 
   generateNoteFromKey(key, scale){
     key = key.toLowerCase();
-    let start = this.semitone.indexOf(key);
+    let start = Const.semitone.indexOf(key);
     if(start < 0){
-      key = _.invert(this.flat_notes)[key];
-      start = this.semitone.indexOf(key);
+      key = _.invert(Const.flat_notes)[key];
+      start = Const.semitone.indexOf(key);
     }
     let notes = [];
-    let size = this.semitone.length;
+    let size = Const.semitone.length;
     for(let i of scale){
-      notes.push(this.semitone[start]);
+      notes.push(Const.semitone[start]);
       start = (start + i * 2) % size;
     }
 
@@ -253,17 +217,28 @@ class MusicGenerator {
     let melodies = [];
     let pattern = '';
     if(this.chordProgression){
-      this.chordProgression.forEach(chord => {
-        let tick = this.findTickFromLength(chord.length);
-        for (let i = 0; i < tick; i++){
-          pattern += (Math.random() > 0.5)? 'x':'_';
+      this.chordProgression.forEach((chord, idx, arr) => {
+        let new_pattern = '';
+        if (idx == 0){
+          new_pattern = 'x';
         }
-        let total_note = pattern.replace(/_/g, '');
+        if (idx >= arr.length - 2 && this.lastbar) {
+          new_pattern = this.lastbar;          
+        } else {
+          let tick = this.findTickFromLength(chord.length);
+          for (let i = 0; i < tick; i++){
+            new_pattern += (Math.random() > 0.5)? 'x':'_';
+          }    
+          new_pattern = new_pattern.substring(0, tick);
+        }
+        console.log(new_pattern);
+        let new_notes = new_pattern.replace(/_/g, '');        
         let expected_note = this.findNoteFromChord(chord.note);
         let octave = Number(chord.note[0][chord.note[0].length-1])+2;
-        for (let i = 0; i < total_note.length; i++) {
-          melodies.push(expected_note[this.random(expected_note)] + octave);
-        }        
+        for (let i = 0; i < new_notes.length; i++) {
+          melodies.push(this.randomElement(expected_note) + octave);
+        }
+        pattern += new_pattern;
       });
       this.melody = scribble.clip({
         notes: melodies,
@@ -281,14 +256,30 @@ class MusicGenerator {
     return _.uniq(chord);
   }
 
-  composeChordProgreesion(chords, repeat) {
+  composeChordProgreesion(chords, repeat = 1) {
     let progress = [];
-    this.facts.chordProgressive.chordChunk.forEach(chord => {
-      progress.push(chords[chord]);
-    });
-    this.chordProgression = scribble.clip({
+    this.chordProgression = [];      
+    if(this.song_part != null){
+      repeat = this.barPerPart || repeat;
+      this.song_part.forEach(part => {
+        this.chordProgression = _.concat(this.chordProgression, this.generateChordProgreesion(this.chordProgressive[part], chords, repeat));       
+      });
+    } else {
+      let loop = this.chordProgressive.main.loop || 1
+      for (let i = 0; i < loop; i++)
+        this.chordProgression = _.concat(this.chordProgression, this.generateChordProgreesion(this.chordProgressive.main, chords, repeat));
+    }
+  }
+
+  generateChordProgreesion(chord_progress, chords, repeat){
+    let progress = [];
+    for(let i=0; i < repeat; i++)
+      chord_progress.chordChunk.forEach(chord => {
+        progress.push(chords[chord]);
+      });
+    return scribble.clip({
       notes: progress,
-      pattern: this.facts.chordProgressive.pattern.repeat(repeat*4),
+      pattern: chord_progress.pattern.repeat(repeat),
       sizzle: true
     });
   }
@@ -315,6 +306,10 @@ class MusicGenerator {
 
   random(arr) {
     return Math.floor(Math.random() * arr.length);
+  }
+
+  randomElement(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 }
 
