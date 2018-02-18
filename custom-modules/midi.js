@@ -84,7 +84,7 @@ function isMajorChord(note){
 
 function perfectFifth(note) {
 	let note_list = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
-	let r = (note_list.indexOf(note[0]) + 2) % note_list.length;
+	let r = (note_list.indexOf(note[0]) + 3) % note_list.length;
 	if (note.length > 2){
 		return note_list[r] + note[1] + (parseInt(note[2]) - 2);
 	} else {

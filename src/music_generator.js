@@ -3,15 +3,16 @@ const scribble = require('scribbletune');
 const Engine = require('json-rules-engine').Engine;
 const rule = require('./music_rules');
 const Const = require('./music_constant');
+const assert = require('assert');
 
 class MusicGenerator {
-  
+
   constructor() {
 
     this.melody = [];
     this.chordProgression = null;
 
-    this.scale = [1, 1, 0.5, 1, 1, 1, 0.5];  
+    this.scale = [1, 1, 0.5, 1, 1, 1, 0.5];
 
     this.initRule();
     this.initEngine();
@@ -19,7 +20,7 @@ class MusicGenerator {
 
   init() {
     this.tempo = this.initAnything(this.tempos);
-    this.key = (typeof this.keySig == 'string') ? this.keySig:this.initAnything(this.keySig);
+    this.key = (typeof this.keySig == 'string') ? this.keySig : this.initAnything(this.keySig);
     this.instMelody = this.initAnything(this.instMelodyList);
     this.instChord = this.initAnything(this.instChordList);
   }
@@ -66,8 +67,8 @@ class MusicGenerator {
         me.song_part = me.facts.songPart.pattern[0];
         me.barPerPart = me.facts.songPart.TotalBarPerPart;
       },
-      onFailure: function (event, almanac) {     
-        me.song_part = null;        
+      onFailure: function (event, almanac) {
+        me.song_part = null;
         me.barPerPart = me.facts.songPart.TotalBarPerPart || 1;
       }
     };
@@ -94,9 +95,11 @@ class MusicGenerator {
       },
       priority: 5,
       onSuccess: function (event, almanac) {
-        if (me.facts.melody.lastBar.pattern){
+        if (me.facts.melody.lastBar.pattern) {
           me.lastbar = me.randomElement(me.facts.melody.lastBar.pattern);
         }
+        me.motif = me.generateMotif(me.facts.melody.motif[1]);
+        me.tick = me.facts.melody.tick;
       },
       onFailure: function (event, almanac) {
 
@@ -107,15 +110,15 @@ class MusicGenerator {
   initEngine() {
     this.engine = new Engine()
     this.engine.addOperator('allContains', (facts_value, rule_value) => {
-      return (typeof facts_value == 'string') ? (rule_value.indexOf(facts_value) >= 0):(_.difference(facts_value, rule_value).length === 0);
+      return (typeof facts_value == 'string') ? (rule_value.indexOf(facts_value) >= 0) : (_.difference(facts_value, rule_value).length === 0);
     })
     this.engine.addOperator('arr2D_allContains', (facts_value, rule_value) => {
       if (Array.isArray(facts_value)) {
         let flag = true;
         facts_value.forEach(arr => {
           let isContain = _.difference(arr, rule_value).length === 0;
-          if(!isContain)
-          flag = false;
+          if (!isContain)
+            flag = false;
         });
         return flag;
       }
@@ -140,7 +143,7 @@ class MusicGenerator {
       let flag = true;
       if (Array.isArray(facts_value)) {
         facts_value.forEach(el => {
-          if(typeof el != 'string'){
+          if (typeof el != 'string') {
             flag = false;
           }
         });
@@ -148,12 +151,12 @@ class MusicGenerator {
       }
       return typeof facts_value == 'string';
     })
-    
+
     this.engine.addRule(this.initializeRule);
     this.engine.addRule(this.songPartRule);
     this.engine.addRule(this.chordProgressiveRule);
     this.engine.addRule(this.melodyRule);
-    
+
     this.engine
       .on('success', (event, almanac) => {
         console.log(event.type + " success.");
@@ -172,21 +175,24 @@ class MusicGenerator {
     this.facts = facts;
   }
 
-  findFirstOctaveFromNote(notes){
-    return (notes[0][0].toLowerCase() == 'a' || notes[0][0].toLowerCase() == 'b')?3:4;
+  findFirstOctaveFromNote(notes) {
+    return (notes[0][0].toLowerCase() == 'a' || notes[0][0].toLowerCase() == 'b') ? 3 : 4;
   }
 
-  generateChordFromNote(notes){
+  generateChordFromNote(notes) {
     let chords = {};
-    let chord_length = [0,2,2,3];
+    let chord_length = [0, 2, 2, 3];
     let first_oct = this.findFirstOctaveFromNote(notes);
-    for (let i in Const.chordsName){
-      chords[Const.chordsName[i]] = [];
+    for (let i in Const.chordsName) {
       let octave = first_oct;
+      if (Const.chordsName[i] == Const.chordsName[5] || Const.chordsName[i] == Const.chordsName[6]) {
+        octave--;
+      }
+      chords[Const.chordsName[i]] = [];
       let pos = Number(i);
       for (let j in chord_length) {
         pos += Number(chord_length[j]);
-        if (pos >= notes.length){
+        if (pos >= notes.length) {
           pos %= notes.length;
           octave += 1;
         }
@@ -196,50 +202,101 @@ class MusicGenerator {
     return chords;
   }
 
-  generateNoteFromKey(key, scale){
+  generateNoteFromKey(key, scale) {
     key = key.toLowerCase();
     let start = Const.semitone.indexOf(key);
-    if(start < 0){
+    if (start < 0) {
       key = _.invert(Const.flat_notes)[key];
       start = Const.semitone.indexOf(key);
     }
     let notes = [];
     let size = Const.semitone.length;
-    for(let i of scale){
+    for (let i of scale) {
       notes.push(Const.semitone[start]);
       start = (start + i * 2) % size;
     }
-
+    this.notes = notes; ////////////////
     return notes;
   }
 
   composeMelody(notes) {
     let melodies = [];
     let pattern = '';
-    if(this.chordProgression){
+    let me = this;
+    if (this.chordProgression) {
       this.chordProgression.forEach((chord, idx, arr) => {
-        let new_pattern = '';
-        if (idx == 0){
-          new_pattern = 'x';
+        let rand = this.random(this.motif.up)
+        let motif = this.motif.up[rand]
+        let new_pattern = motif.pattern.repeat(2) || '';
+        let tick = this.findTickFromLength(chord.length);
+        if (idx == 0) {
+          if (new_pattern == '') {
+            new_pattern = 'x';
+          }
         }
-        if (idx >= arr.length - 2 && this.lastbar) {
-          new_pattern = this.lastbar;          
+        if (idx >= arr.length - 1 && this.lastbar) {
+          new_pattern = this.lastbar;
         } else {
-          let tick = this.findTickFromLength(chord.length);
-          for (let i = 0; i < tick; i++){
-            new_pattern += (Math.random() > 0.5)? 'x':'_';
-          }    
-          new_pattern = new_pattern.substring(0, tick);
+          for (let i = 0; i < tick; i++) {
+            new_pattern += (Math.random() > 0.7) ? 'x' : '_';
+          }
         }
-        console.log(new_pattern);
-        let new_notes = new_pattern.replace(/_/g, '');        
-        let expected_note = this.findNoteFromChord(chord.note);
-        let octave = Number(chord.note[0][chord.note[0].length-1])+2;
-        for (let i = 0; i < new_notes.length; i++) {
-          melodies.push(this.randomElement(expected_note) + octave);
+        new_pattern = new_pattern.substring(0, tick);
+        // console.log(new_pattern);
+        let new_notes = new_pattern.replace(/_/g, '');
+        let octave = 6;
+        let expected_note = this.findNoteFromChord(chord.note, octave);
+        // let octave = Number(chord.note[0][chord.note[0].length - 1]) + 2;
+        let m = motif.notes[0];
+        let c = 0;
+        let melody = expected_note[0][0];
+        let l = (motif.notes.length < new_notes.length) ? motif.notes.length : new_notes.length;
+        let mld = [];
+
+        let o = octave
+        for (let i = 0; i < l; i++) {
+          m = motif.notes[c++];
+          let n = this.notes.indexOf(melody) + m;
+          // o = (n > this.notes.length) ? o + 1 : 
+          //     (n < 0) ? o - 1 : o;
+          o = (n > this.notes.length) ? o + 1 : o;          
+          n = (n < 0) ? n + this.notes.length : n;
+          melody = this.notes[n % this.notes.length];
+          mld.push(melody + o);
         }
+        motif = this.motif.down[rand];
+        c = 0;
+        l = (motif.notes.length < new_notes.length - this.motif.up[rand].notes.length) ? motif.notes.length : new_notes.length - this.motif.up[rand].notes.length;
+        melody = expected_note[0][0];
+        o = octave;
+        for (let i = 0; i < l; i++) {
+          m = motif.notes[c++];
+          let n = this.notes.indexOf(melody) + m;
+          o = (n > this.notes.length) ? o + 1 : o;
+          n = (n < 0) ? n + this.notes.length : n;
+          melody = this.notes[n % this.notes.length];
+          mld.push(melody + o);
+        }
+        l = new_notes.length - motif.notes.length - this.motif.up[rand].notes.length;
+        for (let i = 0; i < l; i++) {
+          mld.push(this.randomElement(expected_note));
+        }
+        melodies = _.concat(melodies, mld);
         pattern += new_pattern;
       });
+
+      let bars = {};
+      let melodies1 = melodies.slice();
+      bars.pattern = pattern.match(/.{1,16}/g);
+      bars.notes = [];
+      bars.pattern.forEach(patt => {
+        let chunk = patt.replace(/_/g, '').length;
+        bars.notes.push(melodies1.splice(0, chunk));
+      })
+      console.log(bars);
+
+
+
       this.melody = scribble.clip({
         notes: melodies,
         pattern: pattern
@@ -247,22 +304,33 @@ class MusicGenerator {
     }
   }
 
-  findTickFromLength(length){
+  findTickFromLength(length) {
     return length / 32;
   }
 
-  findNoteFromChord(chord){
-    chord = chord.map(note => note[0]);
-    return _.uniq(chord);
+  findNoteFromChord(chord, octave) {
+    let base = chord[0][chord[0].length - 1];
+    chord = chord.map(function (note) {
+      let o = octave;
+      if (note[note.length - 1] > base) {
+        o = octave + 1;
+      }
+      if (note.length == 3) {
+        return note[0] + note[1] + o;
+      } else {
+        return note[0] + o;
+      }
+    });
+    return chord.slice(0, -1);
   }
 
   composeChordProgreesion(chords, repeat = 1) {
     let progress = [];
-    this.chordProgression = [];      
-    if(this.song_part != null){
+    this.chordProgression = [];
+    if (this.song_part != null) {
       repeat = this.barPerPart || repeat;
       this.song_part.forEach(part => {
-        this.chordProgression = _.concat(this.chordProgression, this.generateChordProgreesion(this.chordProgressive[part], chords, repeat));       
+        this.chordProgression = _.concat(this.chordProgression, this.generateChordProgreesion(this.chordProgressive[part], chords, repeat));
       });
     } else {
       let loop = this.chordProgressive.main.loop || 1
@@ -271,9 +339,9 @@ class MusicGenerator {
     }
   }
 
-  generateChordProgreesion(chord_progress, chords, repeat){
+  generateChordProgreesion(chord_progress, chords, repeat) {
     let progress = [];
-    for(let i=0; i < repeat; i++)
+    for (let i = 0; i < repeat; i++)
       chord_progress.chordChunk.forEach(chord => {
         progress.push(chords[chord]);
       });
@@ -282,6 +350,98 @@ class MusicGenerator {
       pattern: chord_progress.pattern.repeat(repeat),
       sizzle: true
     });
+  }
+
+  generateMotif(motif) {
+    let motives_up = [motif];
+    let notes = [2, 4];
+    for (let note of notes) {
+      motives_up.push({
+        notes: _.concat(motif.notes[0] + note, motif.notes.slice(1)),
+        pattern: motif.pattern
+      });
+    }
+    motif = {
+      notes: motif.notes.map(x => x * -1),
+      pattern: motif.pattern
+    };
+    let motives_down = [motif];
+    for (let note of notes) {
+      motives_down.push({
+        notes: _.concat(motif.notes[0] + note, motif.notes.slice(1)),
+        pattern: motif.pattern
+      });
+    }
+
+    let patterns = [];
+    // let pattern = this.increaseTimeOfPattern(motif.pattern);
+    // let l = 0;
+    // while (l <= 16) {
+    //   l = pattern.length;
+    //   patterns.push(pattern);
+    //   pattern = this.increaseTimeOfPattern(pattern);
+    // }
+
+    // console.log(motif.pattern);
+
+    let pattern = this.decreaseTimeOfPattern(motif.pattern);
+    while (1) {
+      if (pattern == '') {
+        break;
+      }
+      patterns.push(pattern)
+      pattern = this.decreaseTimeOfPattern(pattern);
+    }
+
+    let motives = {
+      up: motives_up,
+      down: motives_down
+    };
+    patterns.forEach(x => {
+      motives_up.forEach(x1 => {
+        motives.up.push({
+          notes: x1.notes,
+          pattern: x
+        });
+      })
+      motives_down.forEach(x1 => {
+        motives.down.push({
+          notes: x1.notes,
+          pattern: x
+        });
+      })
+    });
+
+    return motives;
+  }
+
+  increaseTimeOfPattern(str_pattern) {
+    let patterns = str_pattern.split('x');
+    if (patterns[0] == '') {
+      patterns.shift();
+    }
+
+    patterns = patterns.map(x => (x + '_').repeat(2));
+    patterns = patterns.map(x => 'x' + x.substring(1));
+
+    patterns = _.join(patterns, '');
+    return patterns
+  }
+
+  decreaseTimeOfPattern(str_pattern) {
+    let patterns = str_pattern.split('x');
+    if (patterns[0] == '') {
+      patterns.shift();
+    }
+
+    if (patterns.indexOf('') >= 0) {
+      return '';
+    }
+
+    patterns = patterns.map(x => 'x' + x);
+    patterns = patterns.map(x => x.substr(0, x.length / 2));
+    patterns = _.join(patterns, '');
+    return patterns;
   }
 
   getMelody() {
