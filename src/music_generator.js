@@ -100,6 +100,7 @@ class MusicGenerator {
         }
         me.motif = me.generateMotif(me.facts.melody.motif[1]);
         me.tick = me.facts.melody.tick;
+        me.passingtone = true;
       },
       onFailure: function (event, almanac) {
 
@@ -224,63 +225,71 @@ class MusicGenerator {
     let pattern = '';
     let me = this;
     if (this.chordProgression) {
+      let chordPerNote = [];
       this.chordProgression.forEach((chord, idx, arr) => {
-        let rand = this.random(this.motif.up)
-        let motif = this.motif.up[rand]
-        let new_pattern = motif.pattern.repeat(2) || '';
-        let tick = this.findTickFromLength(chord.length);
+        let rand = me.random(me.motif.up);
+        let rand1 = me.random(me.motif.down);        
+        let motif = me.motif.up[rand]
+        let motif1 = me.motif.down[rand]
+        let new_pattern = motif.pattern || '';    
+        let motif_down_pos_str = Math.abs(~~(Math.random() * (16 - new_pattern.length - motif.pattern.length) + new_pattern.length));        
+        let tick = me.findTickFromLength(chord.length);
         if (idx == 0) {
           if (new_pattern == '') {
             new_pattern = 'x';
           }
         }
-        if (idx >= arr.length - 1 && this.lastbar) {
-          new_pattern = this.lastbar;
+        if (idx >= arr.length - 1 && me.lastbar) {
+          new_pattern = me.lastbar;
         } else {
           for (let i = 0; i < tick; i++) {
-            new_pattern += (Math.random() > 0.7) ? 'x' : '_';
+            new_pattern += (Math.random() > 0.85) ? 'x' : '_';
           }
         }
+        new_pattern = new_pattern.slice(0, motif_down_pos_str) + motif1.pattern + new_pattern.slice(motif_down_pos_str)
         new_pattern = new_pattern.substring(0, tick);
-        // console.log(new_pattern);
-        let new_notes = new_pattern.replace(/_/g, '');
+        let new_notes = new_pattern.replace(/_/g, '').length;
+        let notes_before_motif_down = new_pattern.slice(0, motif_down_pos_str).replace(/_/g, '').length;
         let octave = 6;
-        let expected_note = this.findNoteFromChord(chord.note, octave);
+        let expected_note = me.findNoteFromChord(chord.note, octave);
         // let octave = Number(chord.note[0][chord.note[0].length - 1]) + 2;
         let m = motif.notes[0];
         let c = 0;
         let melody = expected_note[0][0];
-        let l = (motif.notes.length < new_notes.length) ? motif.notes.length : new_notes.length;
+        let l = (motif.notes.length < new_notes) ? motif.notes.length : new_notes;
         let mld = [];
-
         let o = octave
         for (let i = 0; i < l; i++) {
           m = motif.notes[c++];
-          let n = this.notes.indexOf(melody) + m;
-          // o = (n > this.notes.length) ? o + 1 : 
+          let n = me.notes.indexOf(melody) + m;
+          // o = (n > me.notes.length) ? o + 1 : 
           //     (n < 0) ? o - 1 : o;
-          o = (n > this.notes.length) ? o + 1 : o;          
-          n = (n < 0) ? n + this.notes.length : n;
-          melody = this.notes[n % this.notes.length];
+          o = (n > me.notes.length) ? o + 1 : o;
+          n = (n < 0) ? n + me.notes.length : n;
+          melody = me.notes[n % me.notes.length];
           mld.push(melody + o);
         }
-        motif = this.motif.down[rand];
+        l = Math.abs(notes_before_motif_down - motif.notes.length);
+        for (let i = 0; i < l; i++) {
+          mld.push(me.randomElement(expected_note));
+        }
         c = 0;
-        l = (motif.notes.length < new_notes.length - this.motif.up[rand].notes.length) ? motif.notes.length : new_notes.length - this.motif.up[rand].notes.length;
+        l = (motif1.notes.length < new_notes - motif.notes.length) ? motif1.notes.length : new_notes - motif.notes.length;
         melody = expected_note[0][0];
         o = octave;
         for (let i = 0; i < l; i++) {
-          m = motif.notes[c++];
-          let n = this.notes.indexOf(melody) + m;
-          o = (n > this.notes.length) ? o + 1 : o;
-          n = (n < 0) ? n + this.notes.length : n;
-          melody = this.notes[n % this.notes.length];
+          m = motif1.notes[c++];
+          let n = me.notes.indexOf(melody) + m;
+          o = (n > me.notes.length) ? o + 1 : o;
+          n = (n < 0) ? n + me.notes.length : n;
+          melody = me.notes[n % me.notes.length];
           mld.push(melody + o);
         }
-        l = new_notes.length - motif.notes.length - this.motif.up[rand].notes.length;
+        l = new_notes - motif1.notes.length - motif.notes.length;
         for (let i = 0; i < l; i++) {
-          mld.push(this.randomElement(expected_note));
+          mld.push(me.randomElement(expected_note));
         }
+        mld = mld.slice(0,new_notes);
         melodies = _.concat(melodies, mld);
         pattern += new_pattern;
       });
@@ -293,13 +302,41 @@ class MusicGenerator {
         let chunk = patt.replace(/_/g, '').length;
         bars.notes.push(melodies1.splice(0, chunk));
       })
-      console.log(bars);
 
+      this.tick = [1, 0, 1, 0];
+      if (this.tick) {
+        for (let i = 0; i < bars.pattern.length; i++) {
+          this.tick.forEach((t, j) => {
+            let add = Math.random() < t;
+            if (bars.pattern[i].charAt(j * 4) == '_' && add) {
+              bars.pattern[i] = this.replaceAt(bars.pattern[i], j * 4, 'a');
+            }
+          });
 
+          let new_patt = bars.pattern[i].replace(/_/g, '');
+          let start = 0;
+          let n = 0;
+          while (n >= 0) {
+            n = new_patt.substr(start).search('a');
+            start = start + n + 1;
+            if (n >= 0) {
+              bars.notes[i].splice(start - 1, 0, bars.notes[i][start - 2]);
+            }
+          }
+        }
+      }
+      bars.pattern = bars.pattern.map(patt => patt.replace(/a/g, 'x'))
+      // console.log(bars);
+      if(this.passingtone) {
+        for (let i = 0; i < bars.pattern.length; i++) {
+          console.log(bars.pattern[i]);
+          console.log(bars.notes[i]);          
+        }
+      }
 
       this.melody = scribble.clip({
-        notes: melodies,
-        pattern: pattern
+        notes: _.flattenDeep(bars.notes),
+        pattern: _.join(bars.pattern, '')
       });
     }
   }
@@ -470,6 +507,10 @@ class MusicGenerator {
 
   randomElement(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  replaceAt(arr, index, replacement) {
+    return arr.substr(0, index) + replacement + arr.substr(index + replacement.length);
   }
 }
 

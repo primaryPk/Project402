@@ -78,8 +78,8 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 1, -1, 1, 1],
-      pattern: 'xxx_x_x___'
+      notes: [0,1,1],
+      pattern: 'x_x_x_'
     }]
   }
 });
