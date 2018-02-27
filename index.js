@@ -14,7 +14,7 @@ var music = new MusicGenerator();
 music.setFacts({
   init: {
     // KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    KeySignature: 'G',
+    KeySignature: 'B',
     // Tempo: { min: 60, max: 80 },
     Tempo: 79,
     // InstrumentChord: [1, 3, 93, 25, 26, 42,, 43],
@@ -78,8 +78,8 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 1, -1],
-      pattern: 'x_x_x_'
+      notes: [0, 1, -1, 1],
+      pattern: 'x_x_x_x_'
     }]
   }
 });

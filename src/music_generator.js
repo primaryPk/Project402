@@ -471,36 +471,45 @@ class MusicGenerator {
               bars.notes[i][j] = all_posible_note[pitch_pos[j]];
             }            
           });
+          console.log(bars.notes[i]);
+          
+          pitch_pos = [];
+          for (let j = 0; j < bars.notes[i].length; j++) {
+            pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
+          }
 
-          // pitch_pos = [];
-          // pitch_gap = [];
-          // for (let j = 0; j < bars.notes[i].length; j++) {
-          //   pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
-          // }
+          let max_pos = Math.max(...pitch_pos);
+          let min_pos = Math.min(...pitch_pos);
+          console.log(pitch_pos);
+          console.log(max_pos);
+          console.log(min_pos);
 
-          // for (let j = 0; j < pitch_pos.length - 1; j++) {
-          //   pitch_gap.push(pitch_pos[j + 1] - pitch_pos[j]);
-          // }
+          if (max_pos - min_pos >= 5){
+            let middle = ~~(min_pos + (max_pos - min_pos) / 2);
+            let middle_gap = [];
+            for (let j = 0; j < pitch_pos.length; j++) {
+              middle_gap.push(pitch_pos[j] - middle);
+            } 
 
-          // let max_pos = Math.max(...pitch_pos);
-          // let min_pos = Math.min(...pitch_pos);
-
-          // if (max_pos - min_pos > 7){
-          //   let middle = min_pos + (max_pos - min_pos) / 2;
-          //   console.log('mid => ' + middle);
+            for (let j = 0; j < middle_gap.length; j++) {
+              if(middle_gap[j] > 2){
+                pitch_pos[j] -= 2;
+              } else if (middle_gap[j] < -2){
+                pitch_pos[j] += 2;                
+              }
+              bars.notes[i][j] = all_posible_note[pitch_pos[j]];
+            } 
             
-          // }
+            console.log('mid => ' + middle);
+            console.log(middle_gap);            
+          }
 
           // console.log(chordProgression[i]);
           
           console.log(bars.notes[i]);
-          console.log(chord_of_note);
-          console.log(cache_note);
+          // console.log(chord_of_note);
+          // console.log(cache_note);
           console.log(rythm_pos);
-          console.log(pitch_pos);
-          // console.log(max_pos);
-          // console.log(min_pos);
-          console.log(pitch_gap);
           console.log('---------------------------------');
         }
 
