@@ -186,22 +186,38 @@ class MusicGenerator {
     let chords = {};
     let chord_length = [0, 2, 2, 3];
     let first_oct = this.findFirstOctaveFromNote(notes);
+    let tmp_note = '';
+    let octave = first_oct;
+    notes = _.flatten(Array(2).fill(notes));    
+    notes = notes.map(n => {
+      if (tmp_note == ''){
+        tmp_note = n;
+        return n + first_oct;
+      } else {     
+        if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
+          octave++;
+        }   
+        tmp_note = n;    
+        return n + octave;
+      }
+    });
+    console.log(notes);
+        
     for (let i in Const.chordsName) {
-      let octave = first_oct;
       if (Const.chordsName[i] == Const.chordsName[5] || Const.chordsName[i] == Const.chordsName[6]) {
         octave--;
       }
       chords[Const.chordsName[i]] = [];
       let pos = Number(i);
       for (let j in chord_length) {
-        pos += Number(chord_length[j]);
-        if (pos >= notes.length) {
-          pos %= notes.length;
-          octave += 1;
-        }
-        chords[Const.chordsName[i]].push(notes[pos] + octave);
+        pos += Number(chord_length[j]);    
+        chords[Const.chordsName[i]].push(notes[pos]);
       }
-    }
+    }    
+    let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length-1) - 1);
+    chords[Const.chordsName[5]] = chords[Const.chordsName[5]].map(decrease_oct);
+    chords[Const.chordsName[6]] = chords[Const.chordsName[6]].map(decrease_oct);
+    
     return chords;
   }
 
@@ -242,15 +258,12 @@ class MusicGenerator {
             new_pattern = 'x';
           }
         }
-        if (idx >= arr.length - 1 && me.lastbar) {
-          new_pattern = me.lastbar;
-          motif_down_pos_str = 0;
-        } else {
+        if (!(idx >= arr.length - 1 && me.lastbar)) {
           for (let i = 0; i < tick; i++) {
             new_pattern += (Math.random() > 0.85) ? 'x' : '_';
           }
         }
-        new_pattern = new_pattern.slice(0, motif_down_pos_str) + motif1.pattern + new_pattern.slice(motif_down_pos_str)
+        new_pattern = (idx >= arr.length - 1 && me.lastbar) ? me.lastbar : new_pattern.slice(0, motif_down_pos_str) + motif1.pattern + new_pattern.slice(motif_down_pos_str)
         new_pattern = new_pattern.substring(0, tick);
         let new_notes = new_pattern.replace(/_/g, '').length;
         let notes_before_motif_down = new_pattern.slice(0, motif_down_pos_str).replace(/_/g, '').length;
@@ -296,7 +309,7 @@ class MusicGenerator {
         melodies = _.concat(melodies, mld);
         pattern += new_pattern;
       });
-
+      
       let bars = {};
       let melodies1 = melodies.slice();
       bars.pattern = pattern.match(/.{1,16}/g);
@@ -327,6 +340,7 @@ class MusicGenerator {
             }
           }
         }
+
       }
       bars.pattern = bars.pattern.map(patt => patt.replace(/a/g, 'x'))
       // console.log(bars);
@@ -347,15 +361,28 @@ class MusicGenerator {
           }
         });
         // console.log(chordProgression);
-
+        
         let all_posible_note = [];
+        let tmp_note = '';
+        let tmp_oct = octave - 1;
         for (let i = 0; i < 3; i++) {
-          notes.forEach(note => {
-            all_posible_note.push(note + (octave + i - 1));
+          notes.forEach(n => {
+            if (tmp_note == '') {
+              tmp_note = n;
+              all_posible_note.push(n + tmp_oct);
+            } else {
+              if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
+                tmp_oct++;
+              }
+              tmp_note = n;
+              all_posible_note.push(n + (tmp_oct));
+            }
           });
         }
-        console.log(all_posible_note);
-
+        // console.log(all_posible_note);
+        // console.log('--------------------------------------');
+        
+        // console.log(_.chunk(_.flattenDeep(bars.notes), 6));
 
         for (let i = 0; i < chordProgression.length; i++) {
           let seek = 0;
@@ -368,7 +395,7 @@ class MusicGenerator {
             patt_chunk.push(bars.pattern[i].substr(seek, chord.length));
             seek += chord.length;
           });
-          console.log('---------------------------------');
+          // console.log('---------------------------------');
           patt_chunk.forEach((patt, ichord) => {
             let count_note = patt.replace(/_/g, '').length;
             chord_of_note.push(_.fill(Array(count_note), chordProgression[i][ichord].note));
@@ -384,7 +411,7 @@ class MusicGenerator {
               note_pos.push(i);
             }
           });
-          console.log(bars.notes[i]);
+          // console.log(bars.notes[i]);
 
           // this.note_in_chord = [1,0,1,0]
           this.note_in_chord.forEach((n, m) => {
@@ -394,6 +421,9 @@ class MusicGenerator {
               if (chord_of_note[k].indexOf(note) == -1) {
                 let actual_note = all_posible_note.indexOf(note);
                 let expected_note = chord_of_note[k].map(n => all_posible_note.indexOf(n));
+                
+                // console.log('act1 => ' + actual_note);
+                // console.log('expt => ' + expected_note);
                 if (actual_note >= _.last(expected_note)) {
                   actual_note = _.last(expected_note);
                 } else {
@@ -404,6 +434,9 @@ class MusicGenerator {
                   }
                   actual_note = cur;
                 }
+                // console.log('act2 => ' + actual_note);
+                // console.log('act2 => ' + all_posible_note[actual_note]);
+                
                 bars.notes[i][k] = all_posible_note[actual_note];
               }
               cache_note[m] = bars.notes[i][k];
@@ -422,19 +455,20 @@ class MusicGenerator {
           // }
 
           // console.log(chordProgression[i]);
-          console.log(bars.pattern[i]);
-          console.log(bars.notes[i]);
-          console.log(chord_of_note);
-          console.log(note_pos);
-          console.log(cache_note);
-          console.log(note_gap);
-          console.log('---------------------------------');
+
+          // console.log(bars.pattern[i]);
+          // console.log(bars.notes[i]);
+          // console.log(chord_of_note);
+          // console.log(note_pos);
+          // console.log(cache_note);
+          // console.log(note_gap);
+          // console.log('---------------------------------');
         }
 
         // ทำตรงนี้ก่อนนนนนนนนนนนนนนนนนนนนนนนนนนน
         // console.log(this.chordProgression);        
       }
-
+      
       this.melody = scribble.clip({
         notes: _.flattenDeep(bars.notes),
         pattern: _.join(bars.pattern, '')
