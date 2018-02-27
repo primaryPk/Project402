@@ -78,7 +78,7 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0,1,1],
+      notes: [0, 1, 1],
       pattern: 'x_x_x_'
     }]
   }
@@ -98,7 +98,7 @@ music.runEngine().then(() => {
   // console.log(music.song_part);
   // console.log(music.lastbar);
   // console.log(music.motif);
-  
+
   // console.log(music.getChordProgression());
   // console.log(music.getMelody());
 
