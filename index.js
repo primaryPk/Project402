@@ -14,7 +14,7 @@ var music = new MusicGenerator();
 music.setFacts({
   init: {
     // KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    KeySignature: 'E',
+    KeySignature: 'G',
     // Tempo: { min: 60, max: 80 },
     Tempo: 79,
     // InstrumentChord: [1, 3, 93, 25, 26, 42,, 43],

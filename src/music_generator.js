@@ -188,21 +188,20 @@ class MusicGenerator {
     let first_oct = this.findFirstOctaveFromNote(notes);
     let tmp_note = '';
     let octave = first_oct;
-    notes = _.flatten(Array(2).fill(notes));    
+    notes = _.flatten(Array(2).fill(notes));
     notes = notes.map(n => {
-      if (tmp_note == ''){
+      if (tmp_note == '') {
         tmp_note = n;
         return n + first_oct;
-      } else {     
+      } else {
         if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
           octave++;
-        }   
-        tmp_note = n;    
+        }
+        tmp_note = n;
         return n + octave;
       }
     });
-    console.log(notes);
-        
+
     for (let i in Const.chordsName) {
       if (Const.chordsName[i] == Const.chordsName[5] || Const.chordsName[i] == Const.chordsName[6]) {
         octave--;
@@ -210,14 +209,14 @@ class MusicGenerator {
       chords[Const.chordsName[i]] = [];
       let pos = Number(i);
       for (let j in chord_length) {
-        pos += Number(chord_length[j]);    
+        pos += Number(chord_length[j]);
         chords[Const.chordsName[i]].push(notes[pos]);
       }
-    }    
-    let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length-1) - 1);
+    }
+    let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length - 1) - 1);
     chords[Const.chordsName[5]] = chords[Const.chordsName[5]].map(decrease_oct);
     chords[Const.chordsName[6]] = chords[Const.chordsName[6]].map(decrease_oct);
-    
+
     return chords;
   }
 
@@ -309,7 +308,7 @@ class MusicGenerator {
         melodies = _.concat(melodies, mld);
         pattern += new_pattern;
       });
-      
+
       let bars = {};
       let melodies1 = melodies.slice();
       bars.pattern = pattern.match(/.{1,16}/g);
@@ -361,7 +360,7 @@ class MusicGenerator {
           }
         });
         // console.log(chordProgression);
-        
+
         let all_posible_note = [];
         let tmp_note = '';
         let tmp_oct = octave - 1;
@@ -381,16 +380,17 @@ class MusicGenerator {
         }
         // console.log(all_posible_note);
         // console.log('--------------------------------------');
-        
+
         // console.log(_.chunk(_.flattenDeep(bars.notes), 6));
 
         for (let i = 0; i < chordProgression.length; i++) {
           let seek = 0;
           let patt_chunk = [];
           let chord_of_note = [];
-          let note_pos = [];
+          let pitch_pos = [];
+          let rythm_pos = [];
           let cache_note = _.fill(Array(4), false);
-          let note_gap = [];
+          let pitch_gap = [0];
           chordProgression[i].forEach(chord => {
             patt_chunk.push(bars.pattern[i].substr(seek, chord.length));
             seek += chord.length;
@@ -408,20 +408,20 @@ class MusicGenerator {
 
           bars.pattern[i].split('').forEach((ch, i) => {
             if (ch == 'x') {
-              note_pos.push(i);
+              rythm_pos.push(i);
             }
           });
           // console.log(bars.notes[i]);
 
           // this.note_in_chord = [1,0,1,0]
           this.note_in_chord.forEach((n, m) => {
-            let k = note_pos.indexOf(4 * m);
+            let k = rythm_pos.indexOf(4 * m);
             if (k != -1 && Math.random() <= n) {
               let note = bars.notes[i][k];
               if (chord_of_note[k].indexOf(note) == -1) {
                 let actual_note = all_posible_note.indexOf(note);
                 let expected_note = chord_of_note[k].map(n => all_posible_note.indexOf(n));
-                
+
                 // console.log('act1 => ' + actual_note);
                 // console.log('expt => ' + expected_note);
                 if (actual_note >= _.last(expected_note)) {
@@ -436,39 +436,78 @@ class MusicGenerator {
                 }
                 // console.log('act2 => ' + actual_note);
                 // console.log('act2 => ' + all_posible_note[actual_note]);
-                
+
                 bars.notes[i][k] = all_posible_note[actual_note];
               }
               cache_note[m] = bars.notes[i][k];
             }
           });
 
-          // for (let j = 0; j < bars.notes[i].length; j++) {
-          //   let new_pos = tmp_patt.substr(pos).search('x');
-          //   tmp_patt = tmp_patt.slice(new_pos + 1);
-          //   pos += new_pos;
-          //   note_pos.push(pos);
+          console.log(bars.pattern[i]);
+          console.log(bars.notes[i]);
+          
+          _.fill(Array(3)).forEach(a => {
+            pitch_pos = [];
+            pitch_gap = [];
 
-          //   // if(tmp_patt[0] == 'x'){
-          //   //   console.log(11);              
-          //   // }
+            for (let j = 0; j < bars.notes[i].length; j++) {
+              pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
+            }
+
+            for (let j = 0; j < pitch_pos.length - 1; j++) {
+              pitch_gap.push(pitch_pos[j + 1] - pitch_pos[j]);
+            }
+            for (let j = 1; j < pitch_gap.length; j++) {
+              if (pitch_gap[j] < -7) {
+                pitch_pos[j] -= 7;
+              } else if (pitch_gap[j] < -3) {
+                pitch_pos[j] -= 3;
+              }
+              if (pitch_gap[j] > 7) {
+                pitch_pos[j] += 7;
+              } else if (pitch_gap[j] > 3) {
+                pitch_pos[j] += 3;
+              }
+              bars.notes[i][j] = all_posible_note[pitch_pos[j]];
+            }            
+          });
+
+          // pitch_pos = [];
+          // pitch_gap = [];
+          // for (let j = 0; j < bars.notes[i].length; j++) {
+          //   pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
+          // }
+
+          // for (let j = 0; j < pitch_pos.length - 1; j++) {
+          //   pitch_gap.push(pitch_pos[j + 1] - pitch_pos[j]);
+          // }
+
+          // let max_pos = Math.max(...pitch_pos);
+          // let min_pos = Math.min(...pitch_pos);
+
+          // if (max_pos - min_pos > 7){
+          //   let middle = min_pos + (max_pos - min_pos) / 2;
+          //   console.log('mid => ' + middle);
+            
           // }
 
           // console.log(chordProgression[i]);
-
-          // console.log(bars.pattern[i]);
-          // console.log(bars.notes[i]);
-          // console.log(chord_of_note);
-          // console.log(note_pos);
-          // console.log(cache_note);
-          // console.log(note_gap);
-          // console.log('---------------------------------');
+          
+          console.log(bars.notes[i]);
+          console.log(chord_of_note);
+          console.log(cache_note);
+          console.log(rythm_pos);
+          console.log(pitch_pos);
+          // console.log(max_pos);
+          // console.log(min_pos);
+          console.log(pitch_gap);
+          console.log('---------------------------------');
         }
 
         // ทำตรงนี้ก่อนนนนนนนนนนนนนนนนนนนนนนนนนนน
         // console.log(this.chordProgression);        
       }
-      
+
       this.melody = scribble.clip({
         notes: _.flattenDeep(bars.notes),
         pattern: _.join(bars.pattern, '')
