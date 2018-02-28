@@ -14,7 +14,7 @@ var music = new MusicGenerator();
 music.setFacts({
   init: {
     // KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    KeySignature: 'A',
+    KeySignature: 'C',
     // Tempo: { min: 60, max: 80 },
     Tempo: 79,
     // InstrumentChord: [1, 3, 93, 25, 26, 42,, 43],
@@ -58,8 +58,9 @@ music.setFacts({
     Outro: {
       // pattern: 'x_______________'.repeat(4),
       // chordChunk: ['I', 'V', 'vi', 'iii']
-      pattern: Const.n4.repeat(5),
-      chordChunk: ['I', 'IV', 'I', 'IV', 'I']
+      pattern: Const.n4.repeat(11),
+      // chordChunk: ['I', 'IV', 'I', 'IV', 'I']
+      chordChunk: ['V', 'I', 'V', 'I', 'V', 'I', 'V', 'I', 'V', 'IV', 'I']
     },
   },
   melody: {
@@ -78,7 +79,7 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 1, -1],
+      notes: [0, 1, 1],
       pattern: 'x_x_x_'
     }]
   }
@@ -94,7 +95,7 @@ music.runEngine().then(() => {
 
   // console.log(music.key);
   // console.log(notes);
-  console.log(chords);
+  // console.log(chords);
   // console.log(music.song_part);
   // console.log(music.lastbar);
   // console.log(music.motif);
