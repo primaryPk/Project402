@@ -445,7 +445,7 @@ class MusicGenerator {
 
           console.log(bars.pattern[i]);
           console.log(bars.notes[i]);
-          
+
           _.fill(Array(3)).forEach(a => {
             pitch_pos = [];
             pitch_gap = [];
@@ -469,10 +469,10 @@ class MusicGenerator {
                 pitch_pos[j] += 3;
               }
               bars.notes[i][j] = all_posible_note[pitch_pos[j]];
-            }            
+            }
           });
           console.log(bars.notes[i]);
-          
+
           pitch_pos = [];
           for (let j = 0; j < bars.notes[i].length; j++) {
             pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
@@ -484,28 +484,84 @@ class MusicGenerator {
           console.log(max_pos);
           console.log(min_pos);
 
-          if (max_pos - min_pos >= 5){
-            let middle = ~~(min_pos + (max_pos - min_pos) / 2);
+          if (max_pos - min_pos >= 5) {
+            // let middle = ~~(min_pos + (max_pos - min_pos) / 2);
+
+            let count = -1;
+            let w = bars.pattern[i].split('').map(ch => {
+              if (ch == 'x') count++;
+              return all_posible_note.indexOf(bars.notes[i][count]);
+            });
+            let middle = ~~(_.reduce(w, function (sum, n) {
+              return sum + n;
+            }, 0) / w.length);
+
             let middle_gap = [];
             for (let j = 0; j < pitch_pos.length; j++) {
               middle_gap.push(pitch_pos[j] - middle);
-            } 
+            }
 
             for (let j = 0; j < middle_gap.length; j++) {
-              if(middle_gap[j] > 2){
+              if (middle_gap[j] > 4) {
+                pitch_pos[j] -= 4;
+              } else if (middle_gap[j] < -4) {
+                pitch_pos[j] += 4;
+              } else if (middle_gap[j] > 2) {
                 pitch_pos[j] -= 2;
-              } else if (middle_gap[j] < -2){
-                pitch_pos[j] += 2;                
+              } else if (middle_gap[j] < -2) {
+                pitch_pos[j] += 2;
               }
               bars.notes[i][j] = all_posible_note[pitch_pos[j]];
-            } 
-            
+            }
+
             console.log('mid => ' + middle);
-            console.log(middle_gap);            
+            console.log(middle_gap);
           }
 
+          LoopA:
+            while (1) {
+              pitch_pos = [];
+              for (let j = 0; j < bars.notes[i].length; j++) {
+                pitch_pos.push(all_posible_note.indexOf(bars.notes[i][j]));
+              }
+              console.log(pitch_pos);
+              LoopB:
+                for (let j = 1; j < pitch_pos.length - 1; j++) {
+                  console.log(pitch_pos[j - 1] + ' > ' + pitch_pos[j] + ' > ' + pitch_pos[j + 1]);
+                  if (pitch_pos[j - 1] == pitch_pos[j + 1]) {
+                    if (pitch_pos[j - 1] - pitch_pos[j] > 2) {
+                      bars.notes[i][j] = all_posible_note[pitch_pos[j] + 2];
+                      break LoopB;
+                    } else if (pitch_pos[j - 1] - pitch_pos[j] < -2) {
+                      bars.notes[i][j] = all_posible_note[pitch_pos[j] - 2];
+                      break LoopB;
+                    }
+                  } else if (pitch_pos[j - 1] > pitch_pos[j] && pitch_pos[j + 1] > pitch_pos[j]) {
+                    bars.notes[i][j] = all_posible_note[pitch_pos[j] + Math.abs(pitch_pos[j - 1] - pitch_pos[j + 1])];
+                    break LoopB;                    
+                  } else if (
+                    (pitch_pos[j - 1] == pitch_pos[j] && pitch_pos[j + 1] > pitch_pos[j] + 1) || 
+                    (pitch_pos[j + 1] == pitch_pos[j] && pitch_pos[j - 1] > pitch_pos[j] + 1)
+                  ) {
+                    bars.notes[i][j] = all_posible_note[pitch_pos[j] + ~~(Math.abs(pitch_pos[j - 1] - pitch_pos[j + 1]) / 2)];
+                    break LoopB;
+                  } else if (pitch_pos[j - 1] < pitch_pos[j] && pitch_pos[j + 1] < pitch_pos[j]) {
+                    bars.notes[i][j] = all_posible_note[pitch_pos[j] - Math.abs(pitch_pos[j - 1] - pitch_pos[j + 1])];
+                    break LoopB;
+                  } else if (
+                    (pitch_pos[j - 1] == pitch_pos[j] && pitch_pos[j - 1] < pitch_pos[j] - 1) ||
+                    (pitch_pos[j + 1] == pitch_pos[j] && pitch_pos[j - 1] < pitch_pos[j] - 1)
+                  ) {
+                    bars.notes[i][j] = all_posible_note[pitch_pos[j] - ~~(Math.abs(pitch_pos[j - 1] - pitch_pos[j + 1]) / 2)];
+                    break LoopB;
+                  }
+                  if (j == pitch_pos.length - 2) {
+                    break LoopA;
+                  }
+                }
+            }
+
           // console.log(chordProgression[i]);
-          
           console.log(bars.notes[i]);
           // console.log(chord_of_note);
           // console.log(cache_note);
@@ -513,7 +569,6 @@ class MusicGenerator {
           console.log('---------------------------------');
         }
 
-        // ทำตรงนี้ก่อนนนนนนนนนนนนนนนนนนนนนนนนนนน
         // console.log(this.chordProgression);        
       }
 
