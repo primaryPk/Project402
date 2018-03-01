@@ -14,7 +14,7 @@ var music = new MusicGenerator();
 music.setFacts({
   init: {
     // KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    KeySignature: 'C',
+    KeySignature: 'A',
     // Tempo: { min: 60, max: 80 },
     Tempo: 79,
     // InstrumentChord: [1, 3, 93, 25, 26, 42,, 43],
@@ -58,9 +58,9 @@ music.setFacts({
     Outro: {
       // pattern: 'x_______________'.repeat(4),
       // chordChunk: ['I', 'V', 'vi', 'iii']
-      pattern: Const.n4.repeat(11),
-      // chordChunk: ['I', 'IV', 'I', 'IV', 'I']
-      chordChunk: ['V', 'I', 'V', 'I', 'V', 'I', 'V', 'I', 'V', 'IV', 'I']
+      pattern: Const.n4.repeat(5),
+      chordChunk: ['I', 'IV', 'I', 'IV', 'I']
+      // chordChunk: ['V', 'I', 'V', 'I', 'V', 'I', 'V', 'I', 'V', 'IV', 'I']
     },
   },
   melody: {

@@ -536,118 +536,148 @@ class MusicGenerator {
               this.increaseOctave(possible_note, 3),
             ];
             possible_note = _.flattenDeep(possible_note);
-            console.log('possible_note');
-            console.log(possible_note);
+            // console.log('possible_note');
+            // console.log(possible_note);
             possible_note = this.noteToNumberPossible(possible_note).filter(n => n <= 15);
-            console.log(possible_note);
+            // console.log(possible_note);
 
             let first_note = bars.notes[i][0];
-            console.log('first_note');
-            console.log(first_note);
+            // console.log('first_note');
+            // console.log(first_note);
             first_note = this.all_posible_note.indexOf(first_note);
-            console.log(first_note);
+            // console.log(first_note);
 
-            console.log(mid_prev + ' > ' + mid_curr + ' > ' + mid_next);
+            // console.log(mid_prev + ' > ' + mid_curr + ' > ' + mid_next);
 
             if (mid_curr > 15) {
-              console.log(bars.notes[i]);
+              // console.log(bars.notes[i]);
               bars.notes[i] = this.moveBarUpDown(first_note, bars.notes[i], bars.pattern[i], possible_note, 12, false);
-              console.log(bars.notes[i]);
-              console.log('mmmmmmmmmmmmmmmmmmmmmmmm');
+              // console.log(bars.notes[i]);
+              // console.log('mmmmmmmmmmmmmmmmmmmmmmmm');
               break LoopB;
             } else if (mid_prev == mid_next) {
               if (mid_curr - 2 > mid_next) { // 10 13 10
-                console.log(bars.notes[i]);
+                // console.log(bars.notes[i]);
                 bars.notes[i] = this.moveBarUpDown(first_note, bars.notes[i], bars.pattern[i], possible_note, mid_prev, false);
-                console.log(bars.notes[i]);
-                console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+                // console.log(bars.notes[i]);
+                // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
                 break LoopB;
               } else if (mid_curr + 2 < mid_next) { // 10 7 10
-                console.log(bars.notes[i]);
+                // console.log(bars.notes[i]);
                 bars.notes[i] = this.moveBarUpDown(first_note, bars.notes[i], bars.pattern[i], possible_note, mid_prev, true);
-                console.log(bars.notes[i]);
-                console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+                // console.log(bars.notes[i]);
+                // console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
                 break LoopB;
               }
             } else if (mid_curr + 3 < mid_prev) {
-              console.log(bars.notes[i]);
+              // console.log(bars.notes[i]);
               bars.notes[i] = this.moveBarUpDown(first_note, bars.notes[i], bars.pattern[i], possible_note, mid_prev, true);
-              console.log(bars.notes[i]);
-              console.log('cccccccccccccccccccccccccccccc');
+              // console.log(bars.notes[i]);
+              // console.log('cccccccccccccccccccccccccccccc');
               break LoopB;
             } else if (mid_curr + 3 < mid_next) {
-              console.log(bars.notes[i]);
+              // console.log(bars.notes[i]);
               bars.notes[i] = this.moveBarUpDown(first_note, bars.notes[i], bars.pattern[i], possible_note, mid_next, true);
-              console.log(bars.notes[i]);
-              console.log('dddddddddddddddddddddddddddddd');
+              // console.log(bars.notes[i]);
+              // console.log('dddddddddddddddddddddddddddddd');
               break LoopB;
             }
 
             if (i >= bars.notes.length - 2) {
               break LoopA;
             }
-            console.log('---------------------------------');            
+            // console.log('---------------------------------');            
           }
 
           fixed_bug_count++;
-          if (fixed_bug_count > bars.notes.length*2){
+          if (fixed_bug_count > bars.notes.length * 2) {
             fixed_bug_count = 0;
-            fixed_bug_start = i+1;
+            fixed_bug_start = i + 1;
           }
         }
 
         console.log('*******************************');
 
-        let tmp = [];
-        for (let i = 0; i < bars.notes.length; i++) {
-          tmp.push(this.findMedium(bars.pattern[i], bars.notes[i]));
-        }
-        console.log(_.chunk(tmp, 8));
 
 
-        // let notes_half_bar = [];
+        let notes_half_bar = [];
         // let patts_half_bar = [];
-        // for (let i = 0; i < bars.notes.length; i++) {
-        //   let p1 = bars.pattern[i].substr(0, bars.pattern[i].length / 2);
-        //   patts_half_bar.push(p1);
-        //   patts_half_bar.push(bars.pattern[i].substr(bars.pattern[i].length / 2));
+        for (let i = 0; i < bars.notes.length; i++) {
+          let p1 = bars.pattern[i].substr(0, bars.pattern[i].length / 2);
+          // patts_half_bar.push(p1);
+          // patts_half_bar.push(bars.pattern[i].substr(bars.pattern[i].length / 2));
 
-        //   let c1 = p1.replace(/_/g, '').length;
+          let c1 = p1.replace(/_/g, '').length;
 
-        //   notes_half_bar.push(_.slice(bars.notes[i], 0, c1));
-        //   notes_half_bar.push(_.slice(bars.notes[i], c1));
-        // }
-        // // console.log(notes_half_bar); 
-        // let tmp_head = _.head(notes_half_bar);
-        // let tmp_last = _.last(notes_half_bar);
+          notes_half_bar.push(_.slice(bars.notes[i], 0, c1));
+          notes_half_bar.push(_.slice(bars.notes[i], c1));
+        }
+        // console.log(notes_half_bar); 
+        let tmp_head = _.head(notes_half_bar);
+        let tmp_last = _.last(notes_half_bar);
+        // console.log(tmp_head);
+        // console.log(tmp_last);
 
         // patts_half_bar = _.initial(_.tail(patts_half_bar));
-        // notes_half_bar = _.initial(_.tail(notes_half_bar));
+        notes_half_bar = _.initial(_.tail(notes_half_bar));
 
-        // // notes_half_bar = notes_half_bar.map(notes => notes.map(n => this.all_posible_note.indexOf(n))) 
+        // notes_half_bar = notes_half_bar.map(notes => notes.map(n => this.all_posible_note.indexOf(n))) 
         // patts_half_bar = _.chunk(patts_half_bar, 2);
-        // notes_half_bar = _.chunk(notes_half_bar, 2);
+        notes_half_bar = _.chunk(notes_half_bar, 2);
         // console.log(notes_half_bar);
-        // console.log(notes_half_bar);
+        // console.log(_.chunk(_.flattenDeep(bars.notes), 8));
+        for (let i = 0; i < notes_half_bar.length; i++) {
+          let note1 = this.noteToNumberPossible([_.last(notes_half_bar[i][0])])[0];
+          let note2 = this.noteToNumberPossible(notes_half_bar[i][1])[0];
+          // console.log(note1 + ' > ' + note2);
 
-        // for (let i = 0; i < notes_half_bar.length; i++) {
-        //   let mid1 = this.findMedium(patts_half_bar[i][0], notes_half_bar[i][0]);
-        //   let mid2 = this.findMedium(patts_half_bar[i][1], notes_half_bar[i][1]);
+          let diff = ~~(Math.abs(note1 - note2) / 2);
+          if (notes_half_bar[i].length == 1) {
+            if (i > 0) {
+              let note3 = this.noteToNumberPossible([_.last(notes_half_bar[i - 1][1])])[0];
+              diff = ~~(Math.abs(note3 - note2) / 2);
+            }
+            if (note1 - note2 > 1) {
+              notes_half_bar[i][0][0] = this.all_posible_note[note2 + diff];
+            } else if (note1 - note2 < -1) {
+              notes_half_bar[i][0][0] = this.all_posible_note[note2 - diff];
+            }
+          } else {
+            if (i > 0) {
+              let note3 = this.noteToNumberPossible([_.last(_.initial(notes_half_bar[i - 1][1]))])[0];
+              diff = ~~(Math.abs(note3 - note2) / 2);
+            }
+            if (note1 - note2 > 1) {
+              notes_half_bar[i][0][notes_half_bar[i][0].length - 1] = this.all_posible_note[note2 + diff];
+            } else if (note1 - note2 < -1) {
+              notes_half_bar[i][0][notes_half_bar[i][0].length - 1] = this.all_posible_note[note2 - diff];
+            }
+          }
+        }
 
-        //   console.log(mid1 + ' <=> ' + mid2);
+        let new_notes = _.concat(tmp_head, _.flattenDeep(notes_half_bar), tmp_last);
 
-        //   if (Math.abs(mid1 - mid2) > 2){
+        bars.notes = [];
+        bars.pattern.forEach(patt => {
+          let chunk = patt.replace(/_/g, '').length;
+          bars.notes.push(new_notes.splice(0, chunk));
+        })
 
-        //   }
+        console.log(bars.notes);
+        for (let i = 0; i < bars.notes.length; i++) {
+          bars.notes[i] = this.passingToneInBar(bars.notes[i])
+          console.log('444444444444444444444444444444444444');
+          
+        }
 
-        // }
-        // console.log(this.chordProgression);        
       }
+      // console.log('-----------------------');
+      // console.log(bars.notes);
 
-      console.log(_.chunk(_.flattenDeep(bars.notes), 8));
+      // console.log(_.chunk(_.flattenDeep(bars.notes), 8));
 
       this.melody = scribble.clip({
-        notes: _.flattenDeep(bars.notes).map(n => (n) ? n : 'a8'),
+        notes: _.flattenDeep(bars.notes),
         pattern: _.join(bars.pattern, '')
       });
     }
@@ -674,27 +704,27 @@ class MusicGenerator {
       new_possible_note = possible_note.filter(n => n <= first_note);
     }
     if (new_possible_note.length == 0) {
-      console.log('break;');
+      // console.log('break;');
       return notes;
     }
     let new_expected_mid = expected_mid - (update * this.randomElement([1, 2]));
 
-    console.log('new pos => ' + new_possible_note);
-    console.log('new exp => ' + new_expected_mid);
+    // console.log('new pos => ' + new_possible_note);
+    // console.log('new exp => ' + new_expected_mid);
 
     let best_notes = first_note;
     let best_mid = Number.NEGATIVE_INFINITY;
     for (const n of new_possible_note) {
-      console.log('n => ' + n);
+      // console.log('n => ' + n);
       let new_pitch = this.changePitch(notes, n - first_note)
       let new_mid = this.findMedium(patt, new_pitch);
-      console.log('new mid => ' + new_mid);
+      // console.log('new mid => ' + new_mid);
 
       if (Math.abs(new_expected_mid - new_mid) <= Math.abs(new_expected_mid - best_mid)) {
         best_mid = new_mid;
         best_notes = new_pitch;
       }
-      console.log('+++++');
+      // console.log('+++++');
     }
     return best_notes;
   }
@@ -704,52 +734,56 @@ class MusicGenerator {
     if (notes.length <= 2) {
       return notes;
     }
-    LoopA:
-      while (1) {
-        pitch_pos = [];
-        for (let j = 0; j < notes.length; j++) {
-          pitch_pos.push(this.all_posible_note.indexOf(notes[j]));
-        }
-        // console.log(pitch_pos);
-        LoopB:
-          for (let j = 1; j < pitch_pos.length - 1; j++) {
-            // console.log(pitch_pos[j - 1] + ' > ' + pitch_pos[j] + ' > ' + pitch_pos[j + 1]);
-            let curr = pitch_pos[j];
-            let next = pitch_pos[j + 1];
-            let prev = pitch_pos[j - 1];
-            let diff = Math.abs(prev - next);
-            if (prev == next) {
-              if (prev - curr > 2) {
-                notes[j] = this.all_posible_note[curr + 2];
-                break LoopB;
-              } else if (prev - curr < -2) {
-                notes[j] = this.all_posible_note[curr - 2];
-                break LoopB;
-              }
-            } else if (prev > curr && next > curr) {
-              notes[j] = this.all_posible_note[curr + diff];
-              break LoopB;
-            } else if (
-              (prev == curr && next > curr + 1) ||
-              (next == curr && prev > curr + 1)
-            ) {
-              notes[j] = this.all_posible_note[curr + ~~(diff / 2)];
-              break LoopB;
-            } else if (prev < curr && next < curr) {
-              notes[j] = this.all_posible_note[curr - diff];
-              break LoopB;
-            } else if (
-              (prev == curr && next < curr - 1) ||
-              (next == curr && prev < curr - 1)
-            ) {
-              notes[j] = this.all_posible_note[curr - ~~(diff / 2)];
-              break LoopB;
-            }
-            if (j == pitch_pos.length - 2) {
-              break LoopA;
-            }
+    LoopA: while (1) {
+      pitch_pos = this.noteToNumberPossible(notes);
+      console.log(notes);
+      console.log(pitch_pos);
+      LoopB: for (let j = 1; j < pitch_pos.length - 1; j++) {
+        console.log(pitch_pos[j - 1] + ' > ' + pitch_pos[j] + ' > ' + pitch_pos[j + 1]);
+        let curr = pitch_pos[j];
+        let next = pitch_pos[j + 1];
+        let prev = pitch_pos[j - 1];
+        let diff = Math.abs(prev - next);
+        if (prev == next) {
+          if (prev - curr > 2) {
+            notes[j] = this.all_posible_note[curr + 2];
+            console.log('aaaaaaaaaaaaaaaaaaaaaaaa');
+            break LoopB;
+          } else if (prev - curr < -2) {
+            notes[j] = this.all_posible_note[curr - 2];
+            console.log('bbbbbbbbbbbbbbbbbbbbbbb');
+
+            break LoopB;
           }
+        } else if (prev > curr && next > curr) {
+          notes[j] = this.all_posible_note[curr + diff];
+          console.log('cccccccccccccccccccccccc');
+          break LoopB;
+        } else if (
+          (prev == curr && next > curr + 1) ||
+          (next == curr && prev > curr + 1)
+        ) {
+          notes[j] = this.all_posible_note[curr + ~~(diff / 2)];
+          console.log('dddddddddddddddddd');
+          break LoopB;
+        } else if (prev < curr && next < curr) {
+          notes[j] = this.all_posible_note[curr - diff];
+          console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+          break LoopB;
+        } else if (
+          (prev == curr && next < curr - 1) ||
+          (next == curr && prev < curr - 1)
+        ) {
+          notes[j] = this.all_posible_note[curr - ~~(diff / 2)];
+          console.log('ffffffffffffffffffffffffffff');
+          break LoopB;
+        }
+        if (j == pitch_pos.length - 2) {
+          break LoopA;
+        }
       }
+      console.log('----------------------------');
+    }
     return notes;
   }
 
