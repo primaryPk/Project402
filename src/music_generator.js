@@ -3,6 +3,7 @@ const scribble = require('scribbletune');
 const Engine = require('json-rules-engine').Engine;
 const rule = require('./music_rules');
 const Const = require('./music_constant');
+const Chord = require('./chord');
 const assert = require('assert');
 
 class MusicGenerator {
@@ -176,48 +177,10 @@ class MusicGenerator {
 
   setFacts(facts) {
     this.facts = facts;
-  }
-
-  findFirstOctaveFromNote(notes) {
-    return (notes[0][0].toLowerCase() == 'a' || notes[0][0].toLowerCase() == 'b') ? 3 : 4;
-  }
+  }  
 
   generateChordFromNote(notes) {
-    let chords = {};
-    let chord_length = [0, 2, 2, 3];
-    let first_oct = this.findFirstOctaveFromNote(notes);
-    let tmp_note = '';
-    let octave = first_oct;
-    notes = _.flatten(Array(2).fill(notes));
-    notes = notes.map(n => {
-      if (tmp_note == '') {
-        tmp_note = n;
-        return n + first_oct;
-      } else {
-        if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
-          octave++;
-        }
-        tmp_note = n;
-        return n + octave;
-      }
-    });
-
-    for (let i in Const.chordsName) {
-      if (Const.chordsName[i] == Const.chordsName[5] || Const.chordsName[i] == Const.chordsName[6]) {
-        octave--;
-      }
-      chords[Const.chordsName[i]] = [];
-      let pos = Number(i);
-      for (let j in chord_length) {
-        pos += Number(chord_length[j]);
-        chords[Const.chordsName[i]].push(notes[pos]);
-      }
-    }
-    let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length - 1) - 1);
-    chords[Const.chordsName[5]] = chords[Const.chordsName[5]].map(decrease_oct);
-    chords[Const.chordsName[6]] = chords[Const.chordsName[6]].map(decrease_oct);
-
-    return chords;
+    return new Chord(notes).generateChord();
   }
 
   generateNoteFromKey(key, scale) {
@@ -596,9 +559,7 @@ class MusicGenerator {
           }
         }
 
-        console.log('*******************************');
-
-
+        // console.log('*******************************');
 
         let notes_half_bar = [];
         // let patts_half_bar = [];
@@ -689,7 +650,7 @@ class MusicGenerator {
           bars.notes.push(new_notes.splice(0, chunk));
         })
 
-        console.log(bars.notes);
+        // console.log(bars.notes);
         for (let i = 0; i < bars.notes.length; i++) {
           bars.notes[i] = this.passingToneInBar(bars.notes[i])
           // console.log('444444444444444444444444444444444444');
@@ -814,9 +775,11 @@ class MusicGenerator {
   }
 
   increaseOctave(notes, inc = 2) {
-    return notes.map(note => {
-      return note.slice(0, note.length - 1) + (+note[note.length - 1] + inc);
-    })
+    if (Array.isArray(notes))
+      return notes.map(note => {
+        return note.slice(0, note.length - 1) + (+note[note.length - 1] + inc);
+      })
+    return notes.slice(0, notes.length - 1) + (+notes[notes.length - 1] + inc);
   }
 
   findMedium(patt, note) {
@@ -853,7 +816,6 @@ class MusicGenerator {
   }
 
   composeChordProgreesion(chords, repeat = 1) {
-    let progress = [];
     this.chordProgression = [];
     if (this.song_part != null) {
       repeat = this.barPerPart || repeat;
@@ -865,6 +827,27 @@ class MusicGenerator {
       for (let i = 0; i < loop; i++)
         this.chordProgression = _.concat(this.chordProgression, this.generateChordProgreesion(this.chordProgressive.main, chords, repeat));
     }
+    let enableTriad = true;    
+    if (enableTriad){
+      let tmp_progression = [];      
+      let chord_obj = new Chord(this.notes);
+      let test_voicing = chord_obj.generateVoicingAndTriad(chords);
+
+      if (this.song_part != null) {
+        repeat = this.barPerPart || repeat;
+        this.song_part.forEach(part => {
+          tmp_progression = _.concat(tmp_progression, this.generateChordProgreesion1(this.chordProgressive[part], test_voicing, repeat));
+        });
+      } else {
+        let loop = this.chordProgressive.main.loop || 1
+        for (let i = 0; i < loop; i++)
+          tmp_progression = _.concat(tmp_progression, this.generateChordProgreesion1(this.chordProgressive.main, test_voicing, repeat));
+      }
+      
+      this.chordProgression1 = tmp_progression;
+    } else {
+      this.chordProgression1 = this.chordProgression;
+    }
   }
 
   generateChordProgreesion(chord_progress, chords, repeat) {
@@ -872,7 +855,21 @@ class MusicGenerator {
     for (let i = 0; i < repeat; i++)
       chord_progress.chordChunk.forEach(chord => {
         progress.push(chords[chord]);
+      });    
+    return scribble.clip({
+      notes: progress,
+      pattern: chord_progress.pattern.repeat(repeat),
+      sizzle: true
+    });
+  }
+
+  generateChordProgreesion1(chord_progress, chords, repeat) {
+    let progress = [];
+    for (let i = 0; i < repeat; i++)
+      chord_progress.chordChunk.forEach(chord => {
+        progress.push(this.randomElement(chords[chord]));
       });
+    console.log(progress);
     return scribble.clip({
       notes: progress,
       pattern: chord_progress.pattern.repeat(repeat),
@@ -977,6 +974,10 @@ class MusicGenerator {
   }
 
   getChordProgression() {
+    return this.chordProgression1;
+  }
+
+  getChordProgressionSimple() {
     return this.chordProgression;
   }
 

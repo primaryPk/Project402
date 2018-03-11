@@ -79,7 +79,7 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 1, 1],
+      notes: [0, 1, -1],
       pattern: 'x___x___x___'
     }]
   }
@@ -105,7 +105,7 @@ music.runEngine().then(() => {
 
 
   midi(music, 'song/test.mid');
-  // midi(music, 'song/test_r+10.mid', 10);
+  midi(music, 'song/test_r+10.mid', 10);
   // midi(music, 'song/test_r_10.mid', -10);
 });
 

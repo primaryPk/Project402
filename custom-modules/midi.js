@@ -149,10 +149,6 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift){
  */
 const midi = (music, fileName, binuaral = 0) => {
 	let melodies = music.getMelody();
-	let chords = music.getChordProgression();
-
-	assert(Array.isArray(melodies), 'You must provide an array of melodies to write!');
-	assert(Array.isArray(chords), 'You must provide an array of chords to write!');
 
 	fileName = fileName || 'music.mid';
 	let file = new jsmidgen.File();
@@ -160,17 +156,17 @@ const midi = (music, fileName, binuaral = 0) => {
 	if (binuaral == 0) {
 		let melody = generateTrack(0, melodies, music.getTempo(), music.getInstrumentMelody());
 		file.addTrack(melody);
-		let chord = generateTrack(1, chords, music.getTempo(), music.getInstrumentChord());
+		let chord = generateTrack(1, music.getChordProgression(), music.getTempo(), music.getInstrumentChord());
 		file.addTrack(chord);
 	} else {		
 		let track_left_melody = generateTrack(0, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_LEFT);
 		file.addTrack(track_left_melody); 
-		let track_left_chord = generateTrack(2, chords, music.getTempo(), music.getInstrumentChord(), PAN_LEFT);
+		let track_left_chord = generateTrack(2, music.getChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_LEFT);
 		file.addTrack(track_left_chord);
 		
 		let track_right_melody = generateTrack(1, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_RIGHT, binuaral);
 		file.addTrack(track_right_melody);
-		let track_right_chord = generateTrack(3, chords, music.getTempo(), music.getInstrumentChord(), PAN_RIGHT, binuaral);
+		let track_right_chord = generateTrack(3, music.getChordProgressionSimple(), music.getTempo(), music.getInstrumentChord(), PAN_RIGHT, binuaral);
 		file.addTrack(track_right_chord);
 	}
 
