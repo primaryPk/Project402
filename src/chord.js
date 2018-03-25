@@ -1,58 +1,240 @@
+const fs = require('fs');
 const _ = require('lodash');
 const Const = require('./music_constant');
+const Util = require('./util');
+const Graph = require('./graph');
 
 class Chord {
 
-  constructor(notes) {
-    this.notes = notes;
-    this.permArr = [],
-      this.usedChars = [];
+  constructor(noteList) {
+    this.noteList = noteList;
   }
 
-  findFirstOctaveFromNote(notes) {
+
+  generateChord(filepath, compute) {
+    let chords = {};
+    if (Util.isExists(filepath)) {
+      chords = Util.loadFile(filepath);
+    } else {
+      chords = compute.bind(this)();
+      Util.saveFile(filepath, chords);
+    }
+    return chords;
+  }
+
+  getSimpleChord() {
+    return this.generateChord('./storage/simple_chord.json', this.computeSimpleChord);
+  }
+
+  findStartOctave(notes) {
     return (notes[0][0].toLowerCase() == 'a' || notes[0][0].toLowerCase() == 'b') ? 3 : 4;
   }
 
-  generateChord() {
+  computeSimpleChord() {
     let chords = {};
-    let chord_length = [0, 2, 2, 3];
-    let first_oct = this.findFirstOctaveFromNote(this.notes);
-    let tmp_note = '';
-    let octave = first_oct;
-    let notes = _.flatten(Array(2).fill(this.notes));
+    const gap = [0, 2, 2, 3];
+    for (const key in this.noteList) {
+      chords[key] = {}
+      console.log(this.noteList);
 
-    notes = notes.map(n => {
-      if (tmp_note == '') {
-        tmp_note = n;
-        return n + first_oct;
-      } else {
-        if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
-          octave++;
-        }
-        tmp_note = n;
-        return n + octave;
+      const start = this.findStartOctave(this.noteList[key]);
+      let notes = this.generateNoteWithOctave(this.noteList[key], start, 2);
+      for (let i in Const.chordsName) {
+        chords[key][Const.chordsName[i]] = this.computeChord(notes, gap, i);
       }
-    });
-
-    for (let i in Const.chordsName) {
-      if (Const.chordsName[i] == Const.chordsName[5] || Const.chordsName[i] == Const.chordsName[6]) {
-        octave--;
-      }
-      chords[Const.chordsName[i]] = [];
-      let pos = Number(i);
-      for (let j in chord_length) {
-        pos += Number(chord_length[j]);
-        chords[Const.chordsName[i]].push(notes[pos]);
-      }
+      let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length - 1) - 1);
+      chords[key][Const.chordsName[5]] = chords[key][Const.chordsName[5]].map(decrease_oct);
+      chords[key][Const.chordsName[6]] = chords[key][Const.chordsName[6]].map(decrease_oct);
     }
-    let decrease_oct = n => n.substring(0, n.length - 1) + (n.substr(n.length - 1) - 1);
-    chords[Const.chordsName[5]] = chords[Const.chordsName[5]].map(decrease_oct);
-    chords[Const.chordsName[6]] = chords[Const.chordsName[6]].map(decrease_oct);
-
-    // this.voicingChord(chords);
-    this.generateTriad(chords, 1);
 
     return chords;
+  }
+
+  getVoicingChord() {
+    // this.computeVoicingChord(this.noteList);
+    return this.generateChord('./storage/voicing_chord.json', this.computeVoicingChord);
+  }
+
+  computeVoicingChord() {
+    let chords = {};
+    const gap = [0, 2, 2, 3];
+
+    let allChords = {};
+    let allVoicingChords = {};
+
+    for (const key in this.noteList) {
+      let notes = _.flatten(Array(2).fill(this.noteList[key]));
+      allChords[this.noteList[key][0] + 'maj'] = this.computeChord(notes, gap, 0);
+      allChords[this.noteList[key][1] + 'min'] = this.computeChord(notes, gap, 1);
+      allChords[this.noteList[key][6] + 'dim'] = this.computeChord(notes, gap, 6);
+    }
+
+    for (const chord in allChords) {
+      // if(chord == 'dmin')
+      //   break;
+      let type = chord.substring(chord.length - 3);
+      let semitone = chord.substring(0, chord.length - 3);
+      let notes_octave = null;
+      let bass = '';
+
+      switch (type) {
+        case 'maj':
+          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          bass = notes_octave[0];
+          break;
+        case 'min':
+          semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 10) % 12];
+          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          bass = notes_octave[1];
+          break;
+        case 'dim':
+          semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 1) % 12];
+          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          bass = notes_octave[6];
+          break;
+        default:
+          break;
+      }
+
+      let base_chords = allChords[chord];
+      console.log(base_chords);
+      let base_chords_uniq = _.uniq(base_chords);
+      let graph = new Graph();
+
+      let new_vertices = [bass];
+      graph.addVertex(bass);
+
+      while (new_vertices.length != 0) {
+        let vertex = new_vertices.shift();
+        let start = notes_octave.indexOf(vertex);
+        if (start < 0) continue;
+        for (let i = start + 1; i < start + 12; i++) {
+          if (i >= notes_octave.length) break;
+          if (base_chords_uniq.indexOf(this.getPitch(notes_octave[i])) >= 0) {
+            graph.addVertex(notes_octave[i]);
+            graph.addEdge(vertex, notes_octave[i])
+            new_vertices.push(notes_octave[i]);
+          }
+        }
+      }
+
+      let chord_octave = this.generateNoteWithOctave(base_chords_uniq, 3, 2);
+      let all_path = [];
+
+      chord_octave.forEach(note => {
+        all_path = _.concat(all_path, graph.findAllPath(note));
+      });
+
+      all_path = this.filterChordByMusicRule(all_path, base_chords, notes_octave);
+      all_path = this.filterChordByBinuaral(all_path, base_chords, notes_octave);
+
+      allVoicingChords[chord] = this.classifiedChord(notes_octave, all_path);
+    }
+
+    let chordList = ['maj', 'min', 'min', 'maj', 'maj', 'min', 'dim'];
+    for (const key in this.noteList) {
+      chords[key] = {}      
+      for (let i in Const.chordsName) {
+        chords[key][Const.chordsName[i]] = allVoicingChords[this.noteList[key][i] + chordList[i]];
+      }
+    }
+    return chords;
+  }
+
+  classifiedChord(noteList, chords){
+    let result = [[],[],[]];
+    chords.forEach(chord => {
+      let chord1 = chord.map(note => noteList.indexOf(note));
+      let min = Math.min(...chord1);
+      let max = Math.max(...chord1);
+      
+      if (max - min < 10) {
+        result[0].push(chord)
+      } else if (max - min < 15) {
+        result[1].push(chord)
+      } else {
+        result[2].push(chord)
+      }      
+    });
+    return result;
+  }
+
+  filterChordByMusicRule(all_path, base_chords, notes_octave) {
+    let base_chords_uniq = _.uniq(base_chords);
+    let gap_rules_array = [12, 8, 8];
+    let gap_rules = {}
+    base_chords_uniq.forEach((key, i) => gap_rules[key] = gap_rules_array[i]);
+
+    all_path = all_path.filter(path => path.length == 4);
+    let count_note = _.countBy(base_chords)
+    all_path = all_path.filter(path => {
+      return _.isEqual(count_note, _.countBy(path, this.getPitch));
+    });
+
+    all_path = all_path.filter(path => {
+      let path_gap = [];
+      let flag = true;
+      for (let i = 0; i < path.length - 1; i++) {
+        path_gap.push(notes_octave.indexOf(path[i + 1]) - notes_octave.indexOf(path[i]));
+      }
+      for (let i = 0; i < path_gap.length; i++) {
+        if (path_gap[i] > gap_rules_array[i]) {
+          flag = false;
+          break;
+        }
+      }
+      return flag;
+    });
+
+    return all_path;
+  }
+
+  filterChordByBinuaral(all_path, base_chords, notes_octave) {
+    all_path = all_path.filter(path => {
+      if (this.getPitch(path[0]) == base_chords[1]) {
+        if (this.getPitch(path[1]) == base_chords[2]) {
+          return true;
+        } else if (notes_octave.indexOf(path[3]) - notes_octave.indexOf(path[0]) < 15) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    all_path = all_path.filter(path => {
+      if (this.getPitch(path[0]) == base_chords[2]) {
+        if (notes_octave.indexOf(path[1]) - notes_octave.indexOf(path[0]) < 12) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    return all_path;
+  }
+
+  generateNoteWithOctave(noteList, start, repeat) {
+    let tmp_note = '';
+    let octave = start;
+    let notes = _.flatten(Array(repeat).fill(noteList));
+
+    notes = notes.map(note => {
+      if (tmp_note == '') {
+        tmp_note = note;
+        return note + start;
+      } else {
+        if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(note)) {
+          octave++;
+        }
+        tmp_note = note;
+        return note + octave;
+      }
+    });
+    return notes;
   }
 
   getPitch(notes) {
@@ -65,171 +247,15 @@ class Chord {
     }
   }
 
-  voicingChord(chords) {
-    let new_chord = {};
-    for (const key in chords) {
-      let chord = this.getPitch(chords[key]);
-      new_chord[key] = [];
-      let vocing = [];
-      let bass = chord[0];
-      let tails = _.tail(chord);
-
-      this.permArr = [];
-      this.usedChars = [];
-      let permute = this.permute(tails);
-
-      permute.map(chord => {
-        return chord.unshift(bass);
-      });
-      let notes = this.notes;
-      let bass_pos = notes.indexOf(bass);
-      let octave = 3;
-      let tmp_note = '';
-      for (let j = 0; j < bass_pos; j++)
-        notes.push(notes.shift())
-      notes = _.flatten(Array(7).fill(notes));
-
-      notes = notes.map(n => {
-        if (tmp_note == '') {
-          tmp_note = n;
-          return n + octave;
-        } else {
-          if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(n)) {
-            octave++;
-          }
-          tmp_note = n;
-          return n + octave;
-        }
-      });
-      // permute = [permute[0]]
-      let octs = [3, 4];
-      // octs = [3]
-
-      octs.forEach(oct => {
-        permute.forEach(p => {
-          let o = oct;
-          let tmp_p = p.slice(1);
-          let gap_rules = [13, 7, 7];
-          // let gap_rules = [14, 9, 9];
-          let bass = p[0] + oct;
-
-          let tree_chord = new Array(4).fill().map(u => ({}));
-          tree_chord[0][bass] = [];
-          // console.log(tree_chord);
-
-          for (let i = 0; i < gap_rules.length; i++) {
-            for (const start in tree_chord[i]) {
-              let tmp_notes = notes.slice(notes.indexOf(start) + 1);
-              // console.log('start => ' + start);
-
-              let j = 0;
-              for (; j < gap_rules[i]; j++) {
-                let pitch = this.getPitch(tmp_notes[j]);
-                // process.stdout.write(tmp_notes[j] + " "); // print
-                if (pitch == tmp_p[i]) {
-                  // console.log();
-                  // console.log(tmp_notes[j] + " ***");
-                  tree_chord[i][start].push(tmp_notes[j]);
-                  tree_chord[i + 1][tmp_notes[j]] = [];
-
-                  // console.log(tree_chord[i]);
-                }
-
-              }
-
-            }
-            // console.log('---------');
-          }
-
-          let new_chord2 = _.chunk(Object.keys(tree_chord[3]));
-
-          for (let i = 2; i >= 0; i--) {
-
-            for (let j = 0; j < new_chord2.length; j++) {
-              let last_note = _.last(new_chord2[j]);
-              // console.log(new_chord2[j]);
-              // console.log(last_note);
-              for (const note in tree_chord[i]) {
-                // console.log(note);
-                // console.log(tree_chord[i][note]);
-
-                if (tree_chord[i][note].indexOf(last_note) >= 0) {
-                  new_chord2[j].push(note);
-                  break;
-                }
-              }
-              // console.log('========');               
-            }
-            // console.log('+++++++++++++++');
-          }
-
-
-          // console.log('//////////');
-          // console.log(new_chord2);
-          // console.log(tree_chord);
-          // console.log(tmp_p);
-
-          new_chord[key].push(new_chord2);
-        });
-      });
+  computeChord(notes, gap, i) {
+    let chord = [];
+    let pos = Number(i);
+    for (let j in gap) {
+      pos += Number(gap[j]);
+      chord.push(notes[pos]);
     }
-
-
-    // console.log(permute);
-    // console.log(notes);
-
-    // console.log(_.flatten(chord));
-    // console.log(vocing);    
-    return _.mapValues(new_chord, function (arr) {      
-      return _.uniqWith(_.flatten(arr), _.isEqual);
-    });
-    
+    return chord;
   }
-
-  generateVoicingAndTriad(chords){
-    let voicing = this.voicingChord(chords);
-    for (let i = 0; i < 2; i++) {
-      chords = this.generateTriad(chords, 1);
-      let tmp = this.voicingChord(chords);
-      voicing = _.mapValues(voicing, function (arr, key) {
-        return _.concat(arr, tmp[key]);
-      });
-    }
-    return voicing;
-  }
-
-  generateTriad(chords, n) {
-    let triad = {};
-    for (const k in chords) {
-      triad[k] = [];
-      let last = _.last(chords[k]);
-      let chord = _.initial(chords[k]);
-      for (let j = 0; j < n; j++)
-        chord.push(chord.shift())
-      chord.forEach(note => {
-        triad[k].push(note);
-      });
-      triad[k].push(last);
-    }
-    console.log(triad);
-    return triad;
-  }
-
-  permute(input) {
-    var i, ch;
-    for (i = 0; i < input.length; i++) {
-      ch = input.splice(i, 1)[0];
-      this.usedChars.push(ch);
-      if (input.length == 0) {
-        this.permArr.push(this.usedChars.slice());
-      }
-      this.permute(input);
-      input.splice(i, 0, ch);
-      this.usedChars.pop();
-    }
-    return this.permArr
-  };
-
 
 }
 

@@ -91,7 +91,7 @@ module.exports = {
         fact: 'songPart',
         path: 'pattern',
         operator: 'arr2D_allContains',
-        value: ['Intro', 'Verse', 'PreChorus', 'Chorus', 'Bridge', 'Outro', 'A', 'B']
+        value: Const.song_part
       }, {
         fact: 'songPart',
         path: 'TotalBarPerPart',

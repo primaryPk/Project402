@@ -166,7 +166,7 @@ const midi = (music, fileName, binuaral = 0) => {
 		
 		let track_right_melody = generateTrack(1, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_RIGHT, binuaral);
 		file.addTrack(track_right_melody);
-		let track_right_chord = generateTrack(3, music.getChordProgressionSimple(), music.getTempo(), music.getInstrumentChord(), PAN_RIGHT, binuaral);
+		let track_right_chord = generateTrack(3, music.getSimpleChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_RIGHT, binuaral);
 		file.addTrack(track_right_chord);
 	}
 
