@@ -67,7 +67,7 @@ class ChordProgression {
       let before_chord = null;
       // const wide_pattern = Util.randomElement(this.wide_patterns);
       const wide_pattern = this.wide_patterns[3];
-      const note_octave = this.Chord.generateNoteWithOctave(this.Chord.noteList[key].slice(0), 3, 6);
+      const note_octave = Util.generateNoteWithOctave(this.Chord.noteList[key].slice(0), 3, 6);
 
       _.uniq(song_part_list).forEach(part => {
         progression[part] = this.generateVoicingChordProgreesion(wide_pattern[part], song_part_obj[part], chords, before_chord, note_octave, barPerPart);

@@ -38,7 +38,7 @@ class Chord {
       console.log(this.noteList);
 
       const start = this.findStartOctave(this.noteList[key]);
-      let notes = this.generateNoteWithOctave(this.noteList[key], start, 2);
+      let notes = Util.generateNoteWithOctave(this.noteList[key], start, 2);
       for (let i in Const.chordsName) {
         chords[key][Const.chordsName[i]] = this.computeChord(notes, gap, i);
       }
@@ -51,7 +51,7 @@ class Chord {
   }
 
   getVoicingChord() {
-    // this.computeVoicingChord(this.noteList);
+    this.computeVoicingChord(this.noteList);
     return this.generateChord('./storage/voicing_chord.json', this.computeVoicingChord);
   }
 
@@ -79,17 +79,17 @@ class Chord {
 
       switch (type) {
         case 'maj':
-          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          notes_octave = Util.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
           bass = notes_octave[0];
           break;
         case 'min':
           semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 10) % 12];
-          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          notes_octave = Util.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
           bass = notes_octave[1];
           break;
         case 'dim':
           semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 1) % 12];
-          notes_octave = this.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
+          notes_octave = Util.generateNoteWithOctave(this.noteList[semitone].slice(0), 3, 5);
           bass = notes_octave[6];
           break;
         default:
@@ -97,7 +97,7 @@ class Chord {
       }
 
       let base_chords = allChords[chord];
-      console.log(base_chords);
+      // console.log(base_chords);
       let base_chords_uniq = _.uniq(base_chords);
       let graph = new Graph();
 
@@ -118,7 +118,7 @@ class Chord {
         }
       }
 
-      let chord_octave = this.generateNoteWithOctave(base_chords_uniq, 3, 2);
+      let chord_octave = Util.generateNoteWithOctave(base_chords_uniq, 3, 2);
       let all_path = [];
 
       chord_octave.forEach(note => {
@@ -213,30 +213,19 @@ class Chord {
       }
       return true;
     });
+    
+    if (Util.isMinorChord(this.noteList[base_chords[0]], base_chords)){
+      all_path = all_path.filter(path => {
+        let tmp_path = this.getPitch(path);
+        return tmp_path[0] == base_chords[0] 
+                && tmp_path[1] == base_chords[1] 
+                // && path[0].substr(path[0].length - 1) != '3'
+      });
+    }   
 
     return all_path;
   }
-
-  generateNoteWithOctave(noteList, start, repeat) {
-    let tmp_note = '';
-    let octave = start;
-    let notes = _.flatten(Array(repeat).fill(noteList));
-
-    notes = notes.map(note => {
-      if (tmp_note == '') {
-        tmp_note = note;
-        return note + start;
-      } else {
-        if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(note)) {
-          octave++;
-        }
-        tmp_note = note;
-        return note + octave;
-      }
-    });
-    return notes;
-  }
-
+  
   getPitch(notes) {
     if (Array.isArray(notes)) {
       return notes.map(note => {

@@ -78,18 +78,17 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 1, 1],
-      pattern: 'x___x___x___'
+      notes: [0, 2, 1, -1],
+      pattern: 'xxxx'
     }]
   }
 });
 
 music.runEngine().then(() => {
   music.init();
-  let notes = music.generateNoteFromKey(music.key, music.scale);
 
   music.composeChordProgreesion();
-  music.composeMelody(notes);
+  music.composeMelody();
 
   // console.log(music.key);
   // console.log(notes);
@@ -103,7 +102,7 @@ music.runEngine().then(() => {
 
 
   midi(music, 'song/test.mid');
-  // midi(music, 'song/test_r+10.mid', 10);
+  midi(music, 'song/test_r+10.mid', 10);
   // midi(music, 'song/test_r_10.mid', -10);
 });
 

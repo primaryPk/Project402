@@ -2,27 +2,29 @@ const fs = require('fs');
 const _ = require('lodash');
 const Const = require('./music_constant');
 
-module.exports.loadFile = (path)=>{
+const self = {};
+
+self.loadFile = (path)=>{
   return JSON.parse(fs.readFileSync(path));
 }
 
-module.exports.saveFile = (path, data) => {
+self.saveFile = (path, data) => {
   fs.writeFileSync(path, JSON.stringify(data))
 }
 
-module.exports.isExists = (path) => {
+self.isExists = (path) => {
   return fs.existsSync(path);
 }
 
-module.exports.random = (arr) => {
+self.random = (arr) => {
   return Math.floor(Math.random() * arr.length);
 }
 
-module.exports.randomElement = (arr) => {
+self.randomElement = (arr) => {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-module.exports.noteToNumber = (noteList, notes) => {
+self.noteToNumber = (noteList, notes) => {
   if (Array.isArray(notes)) {
     return notes.map(note => {
       return noteList.indexOf(note);
@@ -32,7 +34,7 @@ module.exports.noteToNumber = (noteList, notes) => {
   }
 }
 
-module.exports.numberToNote = (noteList, notes) => {
+self.numberToNote = (noteList, notes) => {
   if (Array.isArray(notes)) {
     return notes.map(note => {
       return noteList[note];
@@ -41,3 +43,57 @@ module.exports.numberToNote = (noteList, notes) => {
     return noteList[notes];
   }
 }
+
+self.generateNoteWithOctave = (noteList, start, repeat) => {
+  let tmp_note = '';
+  let octave = start;
+  let notes = _.flatten(Array(repeat).fill(noteList));
+
+  notes = notes.map(note => {
+    if (tmp_note == '') {
+      tmp_note = note;
+      return note + start;
+    } else {
+      if (Const.semitone.indexOf(tmp_note) > Const.semitone.indexOf(note)) {
+        octave++;
+      }
+      tmp_note = note;
+      return note + octave;
+    }
+  });
+  return notes;
+}
+
+self.changePitch = (noteList, note, shift) => {
+  let octave = self.getOctave(note);
+  let pitch = self.getPitch(note);  
+  return noteList[(noteList.indexOf(pitch) + shift + noteList.length) % noteList.length] + octave;
+}
+
+self.changePitchWithoutOctave = (noteList, note, shift) => {
+  return noteList[(noteList.indexOf(note) + shift + noteList.length) % noteList.length];
+}
+
+self.getPitch = (notes) => {
+  if (Array.isArray(notes)) {
+    return notes.map(note => {
+      return note.slice(0, note.length - 1);
+    });
+  } else {
+    return notes.slice(0, notes.length - 1);
+  }
+}
+
+self.isMinorChord = (notes, chord) => {
+  return chord[1] != notes[2];
+}
+
+self.isMinorChordByVoicingChord = (notes, chord) => {
+  return self.noteToNumber(notes, chord).indexOf(-1) >= 0;
+}
+
+self.getOctave = (note) => {
+  return Number(note.substr(note.length - 1));
+}
+
+module.exports = self;

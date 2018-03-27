@@ -5,7 +5,9 @@ const rule = require('./music_rules');
 const Const = require('./music_constant');
 const ChordProgression = require('./chord_progression');
 const Note = require('./note');
+const Velocity = require('./velocity');
 const Util = require('./util');
+
 class MusicGenerator {
 
   constructor() {
@@ -19,14 +21,8 @@ class MusicGenerator {
     this.initEngine();
 
     this.Note = new Note().generateNoteMajorScale();
-    // console.log(this.Note);
-
     this.ChordProgression = new ChordProgression(this.Note);
-
-    // console.log(this.Note);
-
-    
-    
+    this.Velocity = new Velocity();
   }
 
   init() {
@@ -76,6 +72,7 @@ class MusicGenerator {
       priority: 9,
       onSuccess: function (event, almanac) {
         me.song_part = me.facts.songPart.pattern[0];
+        me.Velocity.setSongpart(me.song_part);
         me.barPerPart = me.facts.songPart.TotalBarPerPart;
       },
       onFailure: function (event, almanac) {
@@ -92,6 +89,7 @@ class MusicGenerator {
       priority: 8,
       onSuccess: function (event, almanac) {
         me.chordProgressive = me.facts.chordProgressive;
+        me.Velocity.setChordProgressive(me.chordProgressive);        
         almanac.addRuntimeFact('chordSuccess', true)
       },
       onFailure: function (event, almanac) {
@@ -206,14 +204,15 @@ class MusicGenerator {
     return notes;
   }
 
-  composeMelody(notes) {
+  composeMelody() {
+    let notes = this.Note[this.key];
     let melodies = [];
     let pattern = '';
     let me = this;
     if (this.simpleChordProgression) {
       let chordPerNote = [];
       let octave = 6;
-      this.simpleChordProgression.forEach((chord, idx, arr) => {
+      this.simpleChordProgression.forEach((chord, idx, arr) => {        
         let rand = Util.random(me.motif.up);
         let rand1 = Util.random(me.motif.down);
         let motif = me.motif.up[rand]
@@ -245,12 +244,12 @@ class MusicGenerator {
         let o = octave
         for (let i = 0; i < l; i++) {
           m = motif.notes[c++];
-          let n = me.notes.indexOf(melody) + m;
-          // o = (n > me.notes.length) ? o + 1 : 
+          let n = notes.indexOf(melody) + m;
+          // o = (n > notes.length) ? o + 1 : 
           //     (n < 0) ? o - 1 : o;
-          o = (n > me.notes.length) ? o + 1 : o;
-          n = (n < 0) ? n + me.notes.length : n;
-          melody = me.notes[n % me.notes.length];
+          o = (n > notes.length) ? o + 1 : o;
+          n = (n < 0) ? n + notes.length : n;
+          melody = notes[n % notes.length];
           mld.push(melody + o);
         }
         l = Math.abs(notes_before_motif_down - motif.notes.length);
@@ -263,10 +262,10 @@ class MusicGenerator {
         o = octave;
         for (let i = 0; i < l; i++) {
           m = motif1.notes[c++];
-          let n = me.notes.indexOf(melody) + m;
-          o = (n > me.notes.length) ? o + 1 : o;
-          n = (n < 0) ? n + me.notes.length : n;
-          melody = me.notes[n % me.notes.length];
+          let n = notes.indexOf(melody) + m;
+          o = (n > notes.length) ? o + 1 : o;
+          n = (n < 0) ? n + notes.length : n;
+          melody = notes[n % notes.length];
           mld.push(melody + o);
         }
         l = new_notes - motif1.notes.length - motif.notes.length;
@@ -719,6 +718,8 @@ class MusicGenerator {
         notes: _.flattenDeep(bars.notes),
         pattern: _.join(bars.pattern, '')
       });
+
+      this.melody = this.Velocity.generateVelocityMelody(this.melody);
     }
   }
 
@@ -870,63 +871,10 @@ class MusicGenerator {
   composeChordProgreesion(repeat = 1) {
     this.simpleChordProgression = this.ChordProgression.composeSimpleChord(this.key, this.song_part, this.chordProgressive, this.barPerPart);
     this.chordProgression = this.ChordProgression.composeVoicingChord(this.key, this.song_part, this.chordProgressive, this.barPerPart);
-    // let chords = this.simpleChord[this.key.toLowerCase()];
-    // console.log(chords);
+
+    this.simpleChordProgression = this.Velocity.generateVelocityChord(this.simpleChordProgression);
+    this.chordProgression = this.Velocity.generateVelocityChord(this.chordProgression);
     
-    // this.simpleChordProgression = [];
-    // if (this.song_part != null) {
-    //   repeat = this.barPerPart || repeat;
-    //   this.song_part.forEach(part => {
-    //     this.simpleChordProgression = _.concat(this.simpleChordProgression, this.generateChordProgreesion(this.chordProgressive[part], chords, repeat));
-    //   });
-    // } else {
-    //   let loop = this.chordProgressive.main.loop || 1
-    //   for (let i = 0; i < loop; i++)
-    //     this.simpleChordProgression = _.concat(this.simpleChordProgression, this.generateChordProgreesion(this.chordProgressive.main, chords, repeat));
-    // }
-    // let enableTriad = true;    
-    // if (enableTriad){
-    //   let tmp_progression = [];
-    //   // let test_voicing = chord_obj.generateVoicingAndTriad(chords);
-    //   let test_voicing = this.voicingChord[this.key.toLowerCase()];
-    //   let wide_patterns = [
-    //     { Intro: 0, Verse: 0, Chorus: 0, Outro: 0, },
-    //     { Intro: 0, Verse: 0, Chorus: 1, Outro: 0, },
-    //     { Intro: 0, Verse: 1, Chorus: 1, Outro: 0, },
-    //     { Intro: 0, Verse: 1, Chorus: 2, Outro: 0, },
-    //     { Intro: 0, Verse: 1, Chorus: 2, Outro: 1, },
-    //     { Intro: 1, Verse: 1, Chorus: 1, Outro: 1, },
-    //     { Intro: 1, Verse: 1, Chorus: 2, Outro: 1, },
-    //   ]
-
-    //   let wide_pattern = Util.randomElement(wide_patterns);
-
-    //   // console.log(chord_obj.classifiedChord(test_voicing));
-      
-
-    //   if (this.song_part != null) {
-    //     repeat = this.barPerPart || repeat;
-    //     this.song_part.forEach(part => {
-    //       tmp_progression = _.concat(tmp_progression, this.generateChordProgreesion1(this.chordProgressive[part], test_voicing, repeat));
-    //     });
-    //   } else {
-    //     let loop = this.chordProgressive.main.loop || 1
-    //     for (let i = 0; i < loop; i++)
-    //       tmp_progression = _.concat(tmp_progression, this.generateChordProgreesion1(this.chordProgressive.main, test_voicing, repeat));
-    //   }
-
-    //   // tmp_progression = [];
-    //   // for (let i = 0; i < test_voicing.ii.length; i++)
-    //   //   tmp_progression = _.concat(tmp_progression, scribble.clip({
-    //   //     notes: [test_voicing.iii[i]],
-    //   //     pattern: Const.n4,
-    //   //     sizzle: true
-    //   //   }));
-      
-    //   this.chordProgression = tmp_progression;
-    // } else {
-    //   this.chordProgression = this.simpleChordProgression;
-    // }
   }
   
 
@@ -1022,8 +970,12 @@ class MusicGenerator {
     return patterns;
   }
 
+  getKeySig(){
+    return this.key;
+  }
+
   getMelody() {
-    return this.melody
+    return this.melody;
   }
 
   getChordProgression() {
