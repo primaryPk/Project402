@@ -14,7 +14,7 @@ var music = new MusicGenerator();
 music.setFacts({
   init: {
     // KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    KeySignature: 'C',
+    KeySignature: 'E',
     // Tempo: { min: 60, max: 80 },
     Tempo: 79,
     // InstrumentChord: [1, 3, 93, 25, 26, 42,, 43],
@@ -39,27 +39,32 @@ music.setFacts({
       // chordChunk: ['I', 'vi', 'IV', 'V'],
       pattern: Const.n4.repeat(5),
       chordChunk: ['I', 'IV', 'I', 'IV', 'I'],
+      sentence: 2
     },
     Verse: {
       // pattern: 'x_______________'.repeat(4),
       // chordChunk: ['I', 'V', 'vi', 'I']
-      pattern: Const.n2.repeat(8),
-      chordChunk: ['I', 'I', 'vi', 'vi', 'ii', 'ii', 'IV', 'IV']
+      pattern: Const.n2.repeat(16),
+      chordChunk: ['I', 'I', 'vi', 'vi', 'ii', 'ii', 'IV', 'IV', 
+                   'I', 'I', 'vi', 'vi', 'ii', 'ii', 'IV', 'IV'],
+      sentence: 2
     },
     PreChorus: null,
     Chorus: {
       // pattern: Const.n2.repeat(2) + Const.n1 + Const.n1 + Const.n2 + Const.n1 + '__x_' + Const.n2 + Const.n3 + Const.n1,
       // chordChunk: ['I', 'I', 'IV', 'IV', 'I', 'V', 'V', 'V', 'I', 'V']
       pattern: Const.n1.repeat(16),
-      chordChunk: ['I', 'I', 'I', 'I', 'vi', 'vi', 'vi', 'vi', 'IV', 'IV', 'IV', 'IV', 'V', 'V', 'V', 'V']
+      chordChunk: ['I', 'I', 'I', 'I', 'vi', 'vi', 'vi', 'vi', 'IV', 'IV', 'IV', 'IV', 'V', 'V', 'V', 'V'],
+      sentence: 1      
     },
     Bridge: null,
     Outro: {
       // pattern: 'x_______________'.repeat(4),
       // chordChunk: ['I', 'V', 'vi', 'iii']
       pattern: Const.n4.repeat(5),
-      chordChunk: ['I', 'IV', 'I', 'IV', 'I']
+      chordChunk: ['I', 'IV', 'I', 'IV', 'I'],
       // chordChunk: ['V', 'I', 'V', 'I', 'V', 'I', 'V', 'I', 'V', 'IV', 'I']
+      sentence: 1
     },
   },
   melody: {
@@ -68,7 +73,7 @@ music.setFacts({
     lastBar: {
       pattern: [
         // Const.n4, 
-        // Const.n2.repeat(2), 
+        // Const.n2.repeat(2),
         // Const.n1 + Const.n3
         'x_'.repeat(2) + Const.n1 + Const.n2
       ],
@@ -78,8 +83,8 @@ music.setFacts({
       notes: [0, 0, 1, 1],
       pattern: 'xx' + Const.n1 + Const.n2 + '__'
     }, {
-      notes: [0, 2, 1, -1],
-      pattern: 'xxxx'
+      notes: [2, 2, -2],
+      pattern: 'x_x_x_'
     }]
   }
 });

@@ -96,4 +96,17 @@ self.getOctave = (note) => {
   return Number(note.substr(note.length - 1));
 }
 
+self.rotate = (arr, n, reverse = false) => {
+  if (!reverse){
+    for (let i = 0; i < n; i++) {
+      arr.push(arr.shift());
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      arr.unshift(arr.pop());
+    }
+  }
+  return arr;
+}
+
 module.exports = self;

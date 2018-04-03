@@ -51,7 +51,7 @@ class Chord {
   }
 
   getVoicingChord() {
-    this.computeVoicingChord(this.noteList);
+    // this.computeVoicingChord(this.noteList);
     return this.generateChord('./storage/voicing_chord.json', this.computeVoicingChord);
   }
 

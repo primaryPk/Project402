@@ -26,11 +26,7 @@ function frequencyToNote(f) {
 function shiftChord(chord, shift) {
 	// console.log(chord);
 	// console.log(shift);
-	const possible_notes = semitone;
-	const pad = Math.max(possible_notes.indexOf('c'), possible_notes.indexOf('c#'))
-	for (let i = 0; i < pad; i++) {
-		possible_notes.push(possible_notes.shift());
-	}
+	let possible_notes = semitone;
 	// console.log(possible_notes);	
 
 	return chord.map(note => {
@@ -90,12 +86,12 @@ function blendChord(chord, shift = 10) {
 
 	let note = jsmidgen.Util.midiPitchFromNote(gather);
 	blend = frequentToBlend(note, shift);
-	console.log(chord);
-	console.log(blend.note);
+	// console.log(chord);
+	// console.log(blend.note);
 
 	blend.note = shiftChord(chord, blend.note);
-	console.log(blend.note);
-	console.log('--------------------------');
+	// console.log(blend.note);
+	// console.log('--------------------------');
 
 	return blend;
 }

@@ -67,7 +67,7 @@ class ChordProgression {
       let before_chord = null;
       // const wide_pattern = Util.randomElement(this.wide_patterns);
       const wide_pattern = this.wide_patterns[3];
-      const note_octave = Util.generateNoteWithOctave(this.Chord.noteList[key].slice(0), 3, 6);
+      const note_octave = Util.generateNoteWithOctave(this.Chord.noteList[key].slice(0), 2, 6);
 
       _.uniq(song_part_list).forEach(part => {
         progression[part] = this.generateVoicingChordProgreesion(wide_pattern[part], song_part_obj[part], chords, before_chord, note_octave, barPerPart);
@@ -113,6 +113,8 @@ class ChordProgression {
             return Util.noteToNumber(note_octave, chord);
           });
 
+          // console.log(new_chordList);         
+
           // console.log(new_chordList_num);
 
           new_chordList = new_chordList_num.filter(chord => {
@@ -143,6 +145,7 @@ class ChordProgression {
             new_chordList = new_chordList_num;
           }
 
+
           let before_level = this.findMedium(before_chord_num);
           let chordList_level = new_chordList.map(chord => {
             return this.findMedium(chord);
@@ -169,7 +172,10 @@ class ChordProgression {
           });
           
           // console.log(before_chord);
+          // console.log(item_nearest);
+          // console.log(chordList_level);
           // console.log(new_chordList);
+          // console.log('---------------------');
 
 
           new_chordList = new_chordList.map(chord => {
@@ -186,11 +192,9 @@ class ChordProgression {
   }
 
   findMedium(chord) {
-    let middle = ~~(_.reduce(chord, function (sum, n) {
+    return ~~(_.reduce(chord, function (sum, n) {
       return sum + n;
     }, 0) / chord.length);
-
-    return middle;
   }
 
 }
