@@ -10,7 +10,14 @@ class Chord {
     this.noteList = noteList;
   }
 
-
+  /**
+   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").
+   *
+   * 
+   * @param {string} filepath - The numeric MIDI pitch value to convert.
+   * @param {Function} compute - The numeric MIDI pitch value to convert.
+   * @returns {string} The resulting symbolic note name.
+   */
   generateChord(filepath, compute) {
     let chords = {};
     if (Util.isExists(filepath)) {
