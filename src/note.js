@@ -5,6 +5,11 @@ const Util = require('./util');
 
 class Note {
 
+  /**
+   * Convert a numeric *********************
+   * 
+   * @returns {Object} The resulting note file.
+   */
   generateNoteMajorScale() {
     const filepath = './storage/note.json';
     let notes = {};
@@ -17,9 +22,15 @@ class Note {
     return notes;
   }
 
+  /**
+   * Convert a numeric *********************
+   * 
+   * @returns {Object} The resulting note file.
+   */
   computeNoteMajorScale(){
     let notes = {};
-    let scale = [1, 1, 0.5, 1, 1, 1, 0.5];
+    let major_scale = [1, 1, 0.5, 1, 1, 1, 0.5]; 
+    let size = Const.semitone.length;
     Const.key.forEach(key => {
       key = key.toLowerCase();
       let start = Const.semitone.indexOf(key);
@@ -28,19 +39,14 @@ class Note {
         start = Const.semitone.indexOf(key);
       }
       let note = [];
-      let size = Const.semitone.length;
-      for (let i of scale) {
+      for (let i of major_scale) {
         note.push(Const.semitone[start]);
         start = (start + i * 2) % size;
       }
-
       notes[key] = note;
-    })
-    return notes
+    });
+    return notes;
   }
-
-
-
 }
 
 module.exports = Note;
