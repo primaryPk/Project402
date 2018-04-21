@@ -5,17 +5,17 @@ module.exports = {
     max: 'c8'
   },
   "3": {
-    name: 'electric piano',
+    name: 'electric_piano',
     min: 'a0',
     max: 'c8'
   },
   "25": {
-    name: 'guitar nylon',
+    name: 'guitar_nylon',
     min: 'e2',
     max: 'g5'
   },
   "26": {
-    name: 'guitar steel',
+    name: 'guitar_steel',
     min: 'e2',
     max: 'g5'
   },

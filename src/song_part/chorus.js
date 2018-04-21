@@ -40,7 +40,7 @@ class Chorus extends SongPart {
         if (melody[j].some(e => e < 0 || e >= this.all_possible_notes.length)) {
           c--;
           j--;
-          console.log('Motif Up found -1');
+          // console.log('Motif Up found -1');
         }
       }
     }
@@ -54,7 +54,7 @@ class Chorus extends SongPart {
         if (melody[j].some(e => e < 0 || e >= this.all_possible_notes.length)) {
           c--;
           j--;
-          console.log('Motif Down found -1');
+          // console.log('Motif Down found -1');
         }
       }
     }

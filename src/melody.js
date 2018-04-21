@@ -47,7 +47,7 @@ class Melody {
 
     let all_possible_notes = this.generateAllPossibleNotes(key, instrument);
 
-    console.log(_.chunk(all_possible_notes, 7));
+    // console.log(_.chunk(all_possible_notes, 7));
 
     let melody_part = {};
     let velocity_part = {};
@@ -149,9 +149,7 @@ class Melody {
     }
     return all_possible_notes;
   }
-
-
-
+  
 }
 
 module.exports = Melody;

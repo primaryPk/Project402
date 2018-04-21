@@ -1,6 +1,6 @@
 const Const = require('./music_constant');
 
-function getRuleChord(name){
+function getRuleChord(name) {
   return {
     any: [{
       all: [{
@@ -43,113 +43,96 @@ function getRuleChord(name){
 module.exports = {
   init: {
     all: [{
-      fact: 'init',
-      path: 'KeySignature',
-      operator: 'allContains',
-      value: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F']
-    }, {
-      fact: 'init',
-      path: 'Tempo',
-      operator: 'between',
-      value: {
-        min: 0,
-        max: 127
-      }
-    },
-    // {
-    //   fact: 'init',
-    //   path: 'TimeSignature',
-    //   operator: 'allContains',
-    //   value: ['3/4', '4/4']
-    // },
-    {
-      fact: 'init',
-      path: 'InstrumentMelody',
-      operator: 'between',
-      value: {
-        min: 0,
-        max: 127
-      }
-    }, {
-      fact: 'init',
-      path: 'InstrumentChord',
-      operator: 'between',
-      value: {
-        min: 0,
-        max: 127
-      }
-    }]
-  },
-  songPart : {
-    all: [{
-      fact: 'initSuccess',
-      operator: 'equal',
-      value: true
-    },
-    {
-      all: [{
-        fact: 'songPart',
-        path: 'pattern',
-        operator: 'arr2D_allContains',
-        value: Const.song_part
+        fact: 'init',
+        path: 'KeySignature',
+        operator: 'allContains',
+        value: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F']
       }, {
-        fact: 'songPart',
-        path: 'TotalBarPerPart',
-        operator: 'greaterThan',
-        value: 0
-      }]
-    }]
+        fact: 'init',
+        path: 'Tempo',
+        operator: 'between',
+        value: {
+          min: 0,
+          max: 127
+        }
+      },
+      {
+        fact: 'init',
+        path: 'InstrumentMelody',
+        operator: 'between',
+        value: {
+          min: 0,
+          max: 127
+        }
+      }, {
+        fact: 'init',
+        path: 'InstrumentChord',
+        operator: 'between',
+        value: {
+          min: 0,
+          max: 127
+        }
+      }
+    ]
+  },
+  songPart: {
+    all: [{
+        fact: 'initSuccess',
+        operator: 'equal',
+        value: true
+      },
+      {
+        all: [{
+          fact: 'songPart',
+          path: 'pattern',
+          operator: 'arr2D_allContains',
+          value: Const.song_part
+        }]
+      }
+    ]
   },
   chordProgressive: {
     all: [{
-      fact: 'initSuccess',
-      operator: 'equal',
-      value: true
-    },
-    {
-      all: [
-        getRuleChord('main'),
-        getRuleChord('Intro'),
-        getRuleChord('Verse'),
-        getRuleChord('PreChorus'),
-        getRuleChord('Chorus'),
-        getRuleChord('Bridge'),
-        getRuleChord('Outro'),
-      ]
-    }]
+        fact: 'initSuccess',
+        operator: 'equal',
+        value: true
+      }, {
+        fact: 'songPartSuccess',
+        operator: 'equal',
+        value: true
+      },
+      {
+        all: [
+          getRuleChord('main'),
+          getRuleChord('Intro'),
+          getRuleChord('Verse'),
+          getRuleChord('PreChorus'),
+          getRuleChord('Chorus'),
+          getRuleChord('Bridge'),
+          getRuleChord('Outro'),
+        ]
+      }
+    ]
   },
   molody: {
     all: [{
-      fact: 'chordSuccess',
-      operator: 'equal',
-      value: true
-    },
-    {
-      all: [{
-        any: [{
-          fact: 'melody',
-          path: 'passingtone',
-          operator: 'equal',
-          value: true
-        }, {
-          fact: 'melody',
-          path: 'passingtone',
-          operator: 'equal',
-          value: false
+        fact: 'chordSuccess',
+        operator: 'equal',
+        value: true
+      },
+      {
+        all: [{
+          any: [{
+            fact: 'melody',
+            path: 'motif',
+            operator: 'compatMotif',
+            value: {
+              notes: 'Array<number>',
+              pattern: 'string'
+            }
+          }]
         }]
-      }, {
-        any: [{
-          fact: 'melody',
-          path: 'Outro.lastBar.pattern',
-          operator: 'equal',
-          value: undefined
-        }, {
-          fact: 'melody',
-          path: 'Outro.lastBar.pattern',
-          operator: 'isStringArrayOrString',
-          value: true
-        }]
-      }]
-    }]
+      }
+    ]
   }
 };

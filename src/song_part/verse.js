@@ -49,7 +49,7 @@ class Verse extends SongPart {
           if (k == 10) {            
             this.intro_motif = null;
           }
-          console.log('Verse Motif Up found -1');
+          // console.log('Verse Motif Up found -1');
         }
       }
     }
@@ -68,7 +68,7 @@ class Verse extends SongPart {
           if(k == 10){
             this.intro_motif = null;
           }          
-          console.log('Verse Motif Down found -1');
+          // console.log('Verse Motif Down found -1');
         }
       }
     }

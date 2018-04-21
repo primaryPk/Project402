@@ -65,7 +65,7 @@ class ChordProgression {
     let progression = {};
     let before_chord = null;
     // const wide_pattern = Util.randomElement(this.wide_patterns);
-    const wide_pattern = this.wide_patterns[3];
+    const wide_pattern = Util.randomElement(this.wide_patterns);
     const note_octave = Util.generateNoteWithOctave(this.Chord.noteListObj[key].slice(0), 2, 6);
     // [a,b,c#,e,f#..]
     // [a3,b3,c#4,d4,e4,f#4..] <= noteList + Oct

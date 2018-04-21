@@ -227,6 +227,19 @@ const Util = {
       }
     }
     return noteList;
+  },
+
+  chordToNumber(chord){
+    switch(chord){
+      case 'I': return 1;
+      case 'ii': return 2;
+      case 'iii': return 3;
+      case 'IV': return 4;
+      case 'V': return 5;
+      case 'vi': return 6;
+      case 'vii': return 7;
+      default: return '';
+    }
   }
 
 };
