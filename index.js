@@ -259,7 +259,7 @@ app.get('**', (req, res, next) => {
 
     // midi(music, 'song/test+10.mid', 10);
     midi(music, 'storage/test.mid', res.freq);
-    res.sendFile(__dirname + '/song/test.mid');
+    res.sendFile(__dirname + '/storage/test.mid');
 
   });
 });
