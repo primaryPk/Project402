@@ -258,7 +258,7 @@ app.get('**', (req, res, next) => {
     console.log(file);
 
     // midi(music, 'song/test+10.mid', 10);
-    midi(music, 'song/test.mid', res.freq);
+    midi(music, 'storage/test.mid', res.freq);
     res.sendFile(__dirname + '/song/test.mid');
 
   });
