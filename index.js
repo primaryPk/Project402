@@ -1,12 +1,14 @@
 const MusicGenerator = require('./src/music_generator');
 const midi = require('./custom-modules/midi');
-const Const = require('./src/music_constant');
-const Instrument = require('./src/instrument_range');
-const fs = require('fs'); 
-const express = require('express')
-const app = express()
+const Const = require('./config/music_constant');
+const Instrument = require('./config/instrument_range');
+const KeyC = require('./storage/note')['c'];
+const Motif = require('./src/motif');
+const fs = require('fs');
+const express = require('express');
+const app = express();
 
-var music = new MusicGenerator();
+const music = new MusicGenerator();
 
 const chord = [
   ['I', 'vi', 'IV', 'V'],
@@ -23,121 +25,245 @@ const chord = [
   ['IV', 'I', 'IV', 'V'],
   ['I', 'vi', 'ii', 'IV']
 ]
+const list_key = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'];
+const inst_melody = [1, 3, 93, 41, 74, 25, 26];
+const inst_chord = [1, 3, 93, 25, 26, 42, 43];
+const inst_melody_paino = [1, 3];
+const inst_melody_ww = [74];
+const inst_melody_string = [41, 25, 26];
+const inst_chord_paino = [1, 3];
+const inst_chord_string = [42, 43, 25, 26];
+const tempo_all = {
+  min: 60,
+  max: 120
+};
+const tempo_slow = {
+  min: 60,
+  max: 80
+};
+const tempo_medium = {
+  min: 81,
+  max: 100
+};
+const tempo_fast = {
+  min: 101,
+  max: 120
+};
+const my_motif = [{
+    notes: [0, 0, 1, 1],
+    pattern: 'x_x_x_x_'
+  },
+  {
+    notes: [0, 1, 0, -1],
+    pattern: 'x_x_x_x_'
+  },
+  {
+    notes: [0, 1, 1, 1],
+    pattern: 'x_x_x_x_'
+  },
+  {
+    notes: [0, 1, -1, 0],
+    pattern: 'x_x_x_x_'
+  },
+  {
+    notes: [0, 1, 1],
+    pattern: 'x_x_x_'
+  },
+  {
+    notes: [0, 1, -1],
+    pattern: 'x_x_x_'
+  },
+  {
+    notes: [0, 1, 0],
+    pattern: 'x_x_x_'
+  },
+  {
+    notes: [0, 0, 1],
+    pattern: 'x_x_x_'
+  },
+  {
+    notes: [0, 2, -1],
+    pattern: 'x_x_x_'
+  },
+  {
+    notes: [0, 0],
+    pattern: 'x_x_'
+  },
+  {
+    notes: [0, 1],
+    pattern: 'x_x_'
+  },
+  {
+    notes: [0, 2],
+    pattern: 'x_x_'
+  },
+];
 
-music.setFacts({
-  init: {
-    KeySignature: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'F'],
-    // KeySignature: 'C',
-    Tempo: { min: 60, max: 80 },
-    // Tempo: 79,
-    InstrumentMelody: [1, 3, 93, 41, 74, 25, 26],
-    InstrumentChord: [1, 3, 93, 25, 26, 42, 43],
-    // InstrumentMelody: 41,
-    // InstrumentChord: 42,
-  },
-  songPart: {
-    pattern: [
-      ['Intro', 'Verse', 'Chorus', 'Outro']
-    ],
-  },
-  chordProgressive: {
-    Intro: {
-      chord: [
-        ['I', 'IV'],
-        ['IV', 'I'],
-        ['I', 'V'],
-        ['V', 'I'],
-        ['ii', 'V', 'I', 'IV'],
-        ['I', 'vi', 'ii', 'IV']        
+// var res = {};
+
+app.get('**', (req, res, next) => {
+  console.log(req.originalUrl);
+
+  res.fact = {
+    songPart: {
+      pattern: [
+        ['Intro', 'Verse', 'Chorus', 'Outro']
       ],
-      cadence: ['V'],
-      phase: 4,
-      rhythm: 1
     },
-    Verse: {
-      chord: chord,
-      cadence: ['', 'V'],
-      phase: 2,
-      rhythm: 2
-    },
-    Chorus: {
-      chord: chord,
-      cadence: [''],
-      phase: 2,
-      rhythm: 4
-    },
-    Outro: {
-      chord: chord.map(e => {
-        let x = e.slice(0);
-        x.push('I');
-        return x;
-      }),
-      cadence: [''],
-      phase: 1,
-      rhythm: 1
-    },
-  },
-  melody: {
-    motif: [
-      { notes: [0, 0, 1, 1], pattern: 'x_x_x_x_' }, 
-      { notes: [0, 1, 0, -1], pattern: 'x_x_x_x_' }, 
-      { notes: [0, 1, 1, 1], pattern: 'x_x_x_x_' }, 
-      { notes: [0, 1, -1, 0], pattern: 'x_x_x_x_' }, 
-      { notes: [0, 1, 1], pattern: 'x_x_x_' }, 
-      { notes: [0, 1, -1], pattern: 'x_x_x_' }, 
-      { notes: [0, 1, 0], pattern: 'x_x_x_' }, 
-      { notes: [0, 0, 1], pattern: 'x_x_x_' }, 
-      { notes: [0, 2, -1], pattern: 'x_x_x_' }, 
-      { notes: [0, 0], pattern: 'x_x_' }, 
-      { notes: [0, 1], pattern: 'x_x_' }, 
-      { notes: [0, 2], pattern: 'x_x_' },
-    ]
-  }
+    chordProgressive: {
+      Intro: {
+        chord: [
+          ['I', 'IV'],
+          ['IV', 'I'],
+          ['I', 'V'],
+          ['V', 'I'],
+          ['ii', 'V', 'I', 'IV'],
+          ['I', 'vi', 'ii', 'IV']
+        ],
+        cadence: ['V'],
+        phase: 4,
+        rhythm: 1
+      },
+      Verse: {
+        chord: chord,
+        cadence: ['', 'V'],
+        phase: 2,
+        rhythm: 2
+      },
+      Chorus: {
+        chord: chord,
+        cadence: [''],
+        phase: 2,
+        rhythm: 4
+      },
+      Outro: {
+        chord: chord.map(e => {
+          let x = e.slice(0);
+          x.push('I');
+          return x;
+        }),
+        cadence: [''],
+        phase: 1,
+        rhythm: 1
+      },
+    }
+  };
+  res.freq = 0;
+  next();
 });
 
-music.runEngine().then(() => {
-  // app.get('/', (req, res) => {
-  // for (let i = 0; i < 1000; i++) {    
+app.get('**', (req, res, next) => {
+  res.fact.init = {
+    KeySignature: list_key,
+    Tempo: tempo_all,
+    InstrumentMelody: inst_melody,
+    InstrumentChord: inst_chord,
+  }
+
+  res.fact.melody = {
+    motif: my_motif
+  };
+  music.setFacts(res.fact);
+  res.freq = 0;
+  next();
+});
+
+app.get('/:inst/:speed/:motif/:freq', (req, res, next) => {
+  var inst_m;
+  var inst_c;
+  if (req.params.inst == 1) {
+    inst_m = inst_melody_paino;
+    inst_c = inst_chord_paino;
+  } else if (req.params.inst_m == 2) {
+    inst_m = inst_melody_string;
+    inst_c = inst_chord_string;
+  } else if (req.params.inst_m == 3) {
+    inst_m = inst_melody_ww;
+    inst_c = inst_chord;
+  } else {
+    inst_m = inst_melody;
+    inst_c = inst_chord;
+  }
+  var tempo;
+  if (req.params.speed == 1) {
+    tempo = tempo_slow;
+  } else if (req.params.speed == 2) {
+    tempo = tempo_medium;
+  } else if (req.params.speed == 3) {
+    tempo = tempo_fast;
+  } else {
+    tempo = tempo_all;
+  }
+
+  var motif;
+  var key;
+  if (req.params.motif == 0) {
+    motif = my_motif;
+    key = list_key;
+  } else {
+    key = req.params.motif[0].toUpperCase();
+    var pattern = 'x_';
+    var notes = [0];
+    var tmp_note = key.toLowerCase();
+    var flag = false;
+    for (let i = 1; i < req.params.motif.length; i++) {
+      var gap = KeyC.indexOf(req.params.motif[i].toLowerCase()) - KeyC.indexOf(tmp_note);
+      if (KeyC.indexOf(req.params.motif[i].toLowerCase()) < KeyC.indexOf(key.toLowerCase())){
+        flag = true;
+      }
+      notes.push(gap);
+      tmp_note = req.params.motif[i].toLowerCase();
+      pattern += 'x_';
+    } 
+
+    if(flag) {
+      notes = Motif.generateMotifDown(notes)[0];
+      console.log('convert motif.');         
+    }
+    
+    motif = [{
+      notes: notes,
+      pattern: pattern
+    }];
+  }
+
+  res.fact.init = {
+    KeySignature: key,
+    Tempo: tempo,
+    InstrumentMelody: inst_m,
+    InstrumentChord: inst_c,
+  }
+
+  res.fact.melody = {
+    motif: motif
+  };
+  music.setFacts(res.fact);
+  res.freq = Number(req.params.freq);
+  next();
+});
+
+app.get('**', (req, res, next) => {
+  music.runEngine().then(() => {
     music.init();
-  
+
     music.composeChordProgreesion();
     music.composeMelody();
 
-    let file = 'song/ver24 complete1/'
-      + music.getKeySig() + ' ' + music.getMotif() + ' '
-      + music.getTempo() + ' '
-      + Instrument[music.getInstrumentMelody()].name + ' '
-      + Instrument[music.getInstrumentChord()].name + ' '
-      + music.getSimpleChordProgression();
+    let file = 'song => ' +
+      music.getKeySig() + ' ' + music.getMotif() + ' ' +
+      music.getTempo() + ' ' +
+      Instrument[music.getInstrumentMelody()].name + ' ' +
+      Instrument[music.getInstrumentChord()].name + ' ' +
+      music.getSimpleChordProgression();
+    console.log(file);
 
-    let count = 0;
-    while (1) {
-      let version = '';
-      if (count != ''){
-        version = ' ('+count+')';
-      }
-      let exist = fs.existsSync(file + version + '.mid');
-      if (exist) {
-        if (count == ''){
-          count = 0;
-        }
-        count ++;
-      } else {
-        midi(music, file + version + '.mid');
-        break;
-      } 
-    }
+    // midi(music, 'song/test+10.mid', 10);
+    midi(music, 'song/test.mid', res.freq);
+    res.sendFile(__dirname + '/song/test.mid');
 
-      
-  // }
-  // midi(music, 'song/test_r+10.mid', 10);
-  // });
-
-
-  // midi(music, 'song/test_r_10.mid', -10);
-  // app.listen(3000, () => {
-  //     console.log('Example app listening on port 3000! 111')
-  // })
+  });
 });
 
-// });
+app.listen(3000, () => {
+  console.log('Example app listening on port 3000!')
+})

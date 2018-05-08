@@ -20,5 +20,16 @@ jsmidgen.Track.prototype.setPan = jsmidgen.Track.prototype.pan = function (chann
   return this;
 };
 
+
+jsmidgen.Track.prototype.setExpression = jsmidgen.Track.prototype.expression = function (channel, expression) {
+  this.events.push(new jsmidgen.Event({
+    type: jsmidgen.Event.CONTROLLER,
+    channel: channel,
+    param1: 0x0B,
+    param2: expression
+  }));
+  return this;
+};
+
 module.exports = jsmidgen;
 

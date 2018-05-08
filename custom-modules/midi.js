@@ -2,7 +2,7 @@ const fs = require('fs');
 const assert = require('assert');
 const jsmidgen = require('./jsmidgen');
 const transpose = require('scribbletune/src/transpose');
-const semitone = require('../src/music_constant').semitone;
+const semitone = require('../config/music_constant').semitone;
 const Util = require('../src/util');
 const Note = (new(require('../src/note'))).generateNoteMajorScale();
 const _ = require('lodash');
@@ -14,6 +14,7 @@ const RANGE = BYTE * BYTE;
 const MIDDLE = RANGE / 2;
 // 2^7 midi = 200 cent
 const MIDI_UNIT = 200 / MIDDLE;
+const EXPRESSION = [60, 63, 66, 70, 80];
 
 function noteToFrequency(n) {
 	return Math.pow(2, (n - 69) / 12) * 440;
@@ -24,11 +25,7 @@ function frequencyToNote(f) {
 }
 
 function shiftChord(chord, shift) {
-	// console.log(chord);
-	// console.log(shift);
 	let possible_notes = semitone;
-	// console.log(possible_notes);	
-
 	return chord.map(note => {
 		let p = Util.getPitch(note);
 		let o = Util.getOctave(note);
@@ -42,9 +39,16 @@ function shiftChord(chord, shift) {
 	});
 }
 
-function blendChord(chord, shift = 10) {
-	let pitch = Util.getPitch(chord);
+function blendChord(chord, shift = 10) { // 'e3', 'g4', 'b4', 'e5'
+	let pitch = Util.getPitch(chord); // 'e', 'g', 'b', 'e'
 	let count = _.countBy(pitch);
+	/*
+	{
+		'a' : 2,
+		'e' : 1,
+		'c#' : 1
+	}
+	*/
 	let key = null;
 	let blend = {};
 	let notes_oct = null;
@@ -52,18 +56,23 @@ function blendChord(chord, shift = 10) {
 
 	for (const k in count) {
 		if (count[k] == 2) {
-			key = k;
+			key = k; // a
 			break;
 		}
 	}
 
-	if (Util.isMinorChordByVoicingChord(Note[key], pitch)) {
-		let oct = Util.getOctave(chord[0]);
+	if (Util.isMinorChordByVoicingChord(Note[key], pitch)) { // 'e', 'g', 'b', 'e' 
+		let oct = Util.getOctave(chord[0]); // 3
 		notes_oct = Util.generateNoteWithOctave(Note[Util.changePitchWithoutOctave(semitone, key, -2)], oct, 1);
+		// Util.changePitchWithoutOctave(semitone, key, -2) => 'd'
+		// notes_oct => 'd3', 'e3', 'f#3', 'g3', 'a3', 'b3', 'c#4'
+		// console.log(notes_oct);	
+
 		if (chord[1] != notes_oct[3]) {
 			oct++;
 		}
-		gather = perfectFifth(Note[key], key) + (oct - 3)
+		gather = perfectFifth(Note[key], key) + (oct - 3) // f# 4 a# 4 => c# 1,  f# 4 a#5 => c# 2
+		// console.log(gather);	// c#1
 
 	} else {
 		let oct1 = Util.getOctave(chord[0]);
@@ -84,34 +93,63 @@ function blendChord(chord, shift = 10) {
 		gather = key + (oct - 2);
 	}
 
-	let note = jsmidgen.Util.midiPitchFromNote(gather);
+	let note = jsmidgen.Util.midiPitchFromNote(gather); // 25
 	blend = frequentToBlend(note, shift);
+	/*
+	{
+		note: 5,
+		msb: 45,
+		lsb: 18
+	}
+	*/
+	// if (Util.isMinorChordByVoicingChord(Note[key], pitch)) {
 	// console.log(chord);
 	// console.log(blend.note);
+	// }
 
 	blend.note = shiftChord(chord, blend.note);
-	// console.log(blend.note);
-	// console.log('--------------------------');
+	/*
+	{
+		note: ['e3', 'g#3', 'c4', 'e4'],
+		msb: 45,
+		lsb: 18
+	}
+	*/
 
 	return blend;
 }
 
 function frequentToBlend(note, shift = 10) {
+	// console.log('------------------------');
+	// console.log(note);
+
+	// c1 => 32
+	// 42 => e1
+
+	// c1 => e1 = 511
+	// n => 5 semitone
+	// cents => 11 cent
+
+
+
 	let f = noteToFrequency(note) + shift;
 	let d = frequencyToNote(f);
 	let cents = (d - note) * 100;
+	// console.log(cents);
+
 	let n = 0;
 
 	if (cents >= 100) {
 		n = Math.floor(cents / 100);
 		cents = cents % 100;
-
 	} else if (cents <= -100) {
 		n = Math.ceil(cents / 100);
 		cents = cents % 100;
 	}
 
 	let blend = centsToBlend(cents)
+	// 100 : 11
+	// 127*127 : ?
 
 	return {
 		note: n,
@@ -148,11 +186,23 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift) {
 	if (pan != null)
 		track.setPan(channel, pan);
 
-	notes.forEach((noteObj) => {
+	track.setExpression(channel, EXPRESSION[0]);
+	let sum = 0;
+	let bar = 1;
+	for (let i = 0, size = notes.length; i < size; i++) {
+		const noteObj = notes[i];
+
+		if (i > size - (EXPRESSION.length + 1)) {
+			track.setExpression(channel, EXPRESSION[size - 1 - i]);
+		}
+
+		if (i == size -1){
+			noteObj.length *= 2;	
+		}
+
 		if (noteObj.note) {
-			if (noteObj.note.length > 1) {
+			if (noteObj.note.length > 1) { // check Chord
 				if (!shift) {
-					// track.addChord(channel, noteObj.note, noteObj.length, 75);
 					noteObj.note.forEach(function (note, index) {
 						track.noteOn(channel, note, 0, noteObj.level[index]);
 					});
@@ -194,7 +244,14 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift) {
 		} else {
 			track.noteOff(channel, '', noteObj.length);
 		}
-	});
+
+		sum += noteObj.length;
+		if (sum == 512 && bar < EXPRESSION.length) {
+			sum = 0;
+			track.setExpression(channel, EXPRESSION[bar]);
+			bar++;
+		}
+	}
 
 	return track
 }
@@ -228,6 +285,8 @@ const midi = (music, fileName, binuaral = 0) => {
 	}
 
 	fs.writeFileSync(fileName, file.toBytes(), 'binary');
+
+	return file.toBytes();
 }
 
 module.exports = midi;

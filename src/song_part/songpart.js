@@ -1,6 +1,7 @@
 const fs = require('fs');
 const _ = require('lodash');
-const Const = require('../music_constant');
+const Const = require('../../config/music_constant');
+const Miss = require('../../config/missing_note');
 const Util = require('../util');
 
 class SongPart {
@@ -208,67 +209,7 @@ class SongPart {
       console.error('Error! note haas a semiquaver.');
       return null;
     }
-    switch (miss) {
-      case 2:
-        return [
-          [2]
-        ];
-      case 4:
-        return [
-          [2, 2],
-          [4]
-        ];
-      case 6:
-        return [
-          [2, 2, 2],
-          [4, 2]
-        ];
-      case 8:
-        return [
-          // [2, 2, 2, 2],
-          [4, 2, 2],
-          [4, 4]
-        ];
-      case 10:
-        return [
-          // [2, 2, 2, 2, 2],
-          [4, 2, 2, 2],
-          [4, 4, 2],
-          [8, 2]
-        ];
-      case 12:
-        return [
-          // [2, 2, 2, 2, 2, 2],
-          // [4, 2, 2, 2, 2],
-          [4, 4, 2, 2],
-          [4, 4, 4],
-          // [8, 2, 2],
-          [8, 4]
-        ];
-      case 14:
-        return [
-          // [2, 2, 2, 2, 2, 2, 2],
-          // [4, 2, 2, 2, 2, 2],
-          [4, 4, 2, 2, 2],
-          [4, 4, 4, 2],
-          [8, 2, 2, 2],
-          [8, 4, 2]
-        ];
-      case 16:
-        return [
-          // [2, 2, 2, 2, 2, 2, 2, 2],
-          // [4, 2, 2, 2, 2, 2, 2],
-          // [4, 4, 2, 2, 2, 2],
-          [4, 4, 4, 2, 2],
-          [4, 4, 4, 4],
-          // [8, 2, 2, 2, 2],
-          [8, 4, 2, 2],
-          [8, 4, 4],
-          [8, 8]
-        ];
-      default:
-        return null;
-    }
+    return Miss[miss];
   }
 
 }

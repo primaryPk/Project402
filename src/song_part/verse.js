@@ -1,6 +1,6 @@
 const fs = require('fs');
 const _ = require('lodash');
-const Const = require('../music_constant');
+const Const = require('../../config/music_constant');
 const Util = require('../util');
 const SongPart = require('./songpart');
 const Motif = require('../motif');

@@ -1,7 +1,4 @@
-// const fs = require('fs');
 const _ = require('lodash');
-// const Const = require('./music_constant');
-// const Util = require('./util');
 
 class Velocity {
 
@@ -66,7 +63,7 @@ class Velocity {
    * @param {Array} chords The numeric MIDI pitch value to convert.
    * @returns {number} The resulting symbolic note name.
    */
-  generateVelocityChord(chords) {
+  generateVelocityChord(chords) {    
     let min = this.ruleChord.min;
     let max = this.ruleChord.max;
     chords = chords.map(chord => {
