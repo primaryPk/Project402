@@ -174,10 +174,10 @@ app.get('/:inst/:speed/:motif/:freq', (req, res, next) => {
   if (req.params.inst == 1) {
     inst_m = inst_melody_paino;
     inst_c = inst_chord_paino;
-  } else if (req.params.inst_m == 2) {
+  } else if (req.params.inst == 2) {
     inst_m = inst_melody_string;
     inst_c = inst_chord_string;
-  } else if (req.params.inst_m == 3) {
+  } else if (req.params.inst == 3) {
     inst_m = inst_melody_ww;
     inst_c = inst_chord;
   } else {
