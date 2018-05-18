@@ -175,9 +175,7 @@ app.get('/:inst/:freq', (req, res, next) => {
     inst_c = inst_chord_paino;
   } else if (req.params.inst == 2) {
     inst_m = inst_melody_string;
-    inst_c = inst_chord_string;
-    console.log(2222222);
-    
+    inst_c = inst_chord_string;    
   } else if (req.params.inst == 3) {
     inst_m = inst_melody_ww;
     inst_c = inst_chord;
