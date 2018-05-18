@@ -105,7 +105,7 @@ app.get('**', (req, res, next) => {
   res.fact = {
     songPart: {
       pattern: [
-        ['Intro', 'Verse', 'Chorus', 'Outro']
+        ['Intro', 'Verse', 'Chorus', 'Outro'],
         ['Intro', 'Verse', 'Chorus', 'Verse', 'Chorus', 'Outro']
       ],
     },
@@ -184,8 +184,9 @@ app.get('/:inst/:freq', (req, res, next) => {
     inst_c = inst_chord;
   }
 
-  res.fact.init.InstrumentMelody = inst_m
-  res.fact.init.InstrumentChord = inst_c
+  res.fact.init.InstrumentMelody = inst_m;
+  res.fact.init.InstrumentChord = inst_c;  
+ 
 
   music.setFacts(res.fact);
   res.freq = Number(req.params.freq);
