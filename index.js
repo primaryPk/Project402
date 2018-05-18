@@ -106,6 +106,7 @@ app.get('**', (req, res, next) => {
     songPart: {
       pattern: [
         ['Intro', 'Verse', 'Chorus', 'Outro']
+        ['Intro', 'Verse', 'Chorus', 'Verse', 'Chorus', 'Outro']
       ],
     },
     chordProgressive: {
@@ -175,6 +176,8 @@ app.get('/:inst/:freq', (req, res, next) => {
   } else if (req.params.inst == 2) {
     inst_m = inst_melody_string;
     inst_c = inst_chord_string;
+    console.log(2222222);
+    
   } else if (req.params.inst == 3) {
     inst_m = inst_melody_ww;
     inst_c = inst_chord;
