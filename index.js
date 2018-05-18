@@ -99,8 +99,6 @@ const my_motif = [{
   },
 ];
 
-// var res = {};
-
 app.get('**', (req, res, next) => {
   console.log(req.originalUrl);
 
@@ -155,7 +153,7 @@ app.get('**', (req, res, next) => {
 app.get('**', (req, res, next) => {
   res.fact.init = {
     KeySignature: list_key,
-    Tempo: tempo_all,
+    Tempo: tempo_slow,
     InstrumentMelody: inst_melody,
     InstrumentChord: inst_chord,
   }
@@ -168,7 +166,7 @@ app.get('**', (req, res, next) => {
   next();
 });
 
-app.get('/:inst/:speed/:motif/:freq', (req, res, next) => {
+app.get('/:inst/:freq', (req, res, next) => {
   var inst_m;
   var inst_c;
   if (req.params.inst == 1) {
@@ -184,59 +182,10 @@ app.get('/:inst/:speed/:motif/:freq', (req, res, next) => {
     inst_m = inst_melody;
     inst_c = inst_chord;
   }
-  var tempo;
-  if (req.params.speed == 1) {
-    tempo = tempo_slow;
-  } else if (req.params.speed == 2) {
-    tempo = tempo_medium;
-  } else if (req.params.speed == 3) {
-    tempo = tempo_fast;
-  } else {
-    tempo = tempo_all;
-  }
 
-  var motif;
-  var key;
-  if (req.params.motif == 0) {
-    motif = my_motif;
-    key = list_key;
-  } else {
-    key = req.params.motif[0].toUpperCase();
-    var pattern = 'x_';
-    var notes = [0];
-    var tmp_note = key.toLowerCase();
-    var flag = false;
-    for (let i = 1; i < req.params.motif.length; i++) {
-      var gap = KeyC.indexOf(req.params.motif[i].toLowerCase()) - KeyC.indexOf(tmp_note);
-      if (KeyC.indexOf(req.params.motif[i].toLowerCase()) < KeyC.indexOf(key.toLowerCase())){
-        flag = true;
-      }
-      notes.push(gap);
-      tmp_note = req.params.motif[i].toLowerCase();
-      pattern += 'x_';
-    } 
+  res.fact.init.InstrumentMelody = inst_m
+  res.fact.init.InstrumentChord = inst_c
 
-    if(flag) {
-      notes = Motif.generateMotifDown(notes)[0];
-      console.log('convert motif.');         
-    }
-    
-    motif = [{
-      notes: notes,
-      pattern: pattern
-    }];
-  }
-
-  res.fact.init = {
-    KeySignature: key,
-    Tempo: tempo,
-    InstrumentMelody: inst_m,
-    InstrumentChord: inst_c,
-  }
-
-  res.fact.melody = {
-    motif: motif
-  };
   music.setFacts(res.fact);
   res.freq = Number(req.params.freq);
   next();
@@ -257,7 +206,6 @@ app.get('**', (req, res, next) => {
       music.getSimpleChordProgression();
     console.log(file);
 
-    // midi(music, 'song/test+10.mid', 10);
     midi(music, 'storage/test.mid', res.freq);
     res.sendFile(__dirname + '/storage/test.mid');
 
@@ -265,5 +213,5 @@ app.get('**', (req, res, next) => {
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log('Example app listening on port 3000!')
+  console.log('App listening on port ' + (process.env.PORT || 3000) + '!')
 })
