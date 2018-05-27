@@ -174,6 +174,17 @@ app.get('/test/:newsong/:bi', (req, res) => {
   var ip = 'test_' + req.ip.replace(/[^a-zA-Z0-9]/g, '_');
   var dir = 'pool/' + ip;
 
+  res.fact.melody = {
+    motif: [{
+      notes: [0, 1, -1],
+      pattern: 'x_x_x_'
+    }, {
+      notes: [0, 1, 1],
+      pattern: 'x_x_x_'
+    }]
+  };
+  music.setFacts(res.fact);
+
   if (req.params.newsong == 0) {
     var bi = req.params.bi == 0 ? '' : 'bi';
     res.sendFile(__dirname + '/' + dir + '/test' + bi + '.mid');
