@@ -7,6 +7,7 @@ const Motif = require('./src/motif');
 const fs = require('fs');
 const express = require('express');
 const app = express();
+app.enable('trust proxy');
 
 const music = new MusicGenerator();
 
@@ -175,7 +176,7 @@ app.get('/:inst/:freq', (req, res, next) => {
     inst_c = inst_chord_paino;
   } else if (req.params.inst == 2) {
     inst_m = inst_melody_string;
-    inst_c = inst_chord_string;    
+    inst_c = inst_chord_string;
   } else if (req.params.inst == 3) {
     inst_m = inst_melody_ww;
     inst_c = inst_chord;
@@ -185,8 +186,8 @@ app.get('/:inst/:freq', (req, res, next) => {
   }
 
   res.fact.init.InstrumentMelody = inst_m;
-  res.fact.init.InstrumentChord = inst_c;  
- 
+  res.fact.init.InstrumentChord = inst_c;
+
 
   music.setFacts(res.fact);
   res.freq = Number(req.params.freq);
@@ -207,9 +208,18 @@ app.get('**', (req, res, next) => {
       Instrument[music.getInstrumentChord()].name + ' ' +
       music.getSimpleChordProgression();
     console.log(file);
+    console.log(req.ip);
 
-    midi(music, 'storage/test.mid', res.freq);
-    res.sendFile(__dirname + '/storage/test.mid');
+    var ip = req.ip.replace(/:|\./g, '_');
+
+    fs.stat(__dirname + '/pool/' + ip, function (err, stats) {
+      if (err) {
+        fs.mkdirSync('./pool/' + ip);
+      }
+
+      midi(music, 'pool/' + ip + '/test.mid', res.freq);
+      res.sendFile(__dirname + '/pool/' + ip + '/test.mid');
+    });
 
   });
 });

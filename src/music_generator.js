@@ -214,14 +214,6 @@ class MusicGenerator {
     this.engine.addRule(this.songPartRule);
     this.engine.addRule(this.chordProgressiveRule);
     this.engine.addRule(this.melodyRule);
-
-    // this.engine
-    //   .on('success', (event, almanac) => {
-    //     console.log(event.type + " success.");
-    //   })
-    //   .on('failure', event => {
-    //     console.log(event.type + " failure.");
-    //   })
   }
 
   runEngine(facts) {
@@ -244,140 +236,15 @@ class MusicGenerator {
     }
   }
 
-  moveBarUpDown(first_note, notes, patt, possible_note, expected_mid, up) {
-    let new_possible_note = [];
-    let update = up ? 1 : -1;
-    if (up) {
-      new_possible_note = possible_note.filter(n => n >= first_note);
-    } else {
-      new_possible_note = possible_note.filter(n => n <= first_note);
-    }
-    if (new_possible_note.length == 0) {
-      // console.log('break;');
-      return notes;
-    }
-    let new_expected_mid = expected_mid - (update * Util.randomElement([1, 2]));
-
-    // console.log('new pos => ' + new_possible_note);
-    // console.log('new exp => ' + new_expected_mid);
-
-    let best_notes = first_note;
-    let best_mid = Number.NEGATIVE_INFINITY;
-    for (const n of new_possible_note) {
-      // console.log('n => ' + n);
-      let new_pitch = Util.changePitch(this.all_posible_note, notes, n - first_note)
-      let new_mid = this.findMedium(patt, new_pitch);
-      // console.log('new mid => ' + new_mid);
-
-      if (Math.abs(new_expected_mid - new_mid) <= Math.abs(new_expected_mid - best_mid)) {
-        best_mid = new_mid;
-        best_notes = new_pitch;
-      }
-      // console.log('+++++');
-    }
-    return best_notes;
-  }
-
-  passingToneInBar(notes) {
-    let pitch_pos = [];
-    if (notes.length <= 2) {
-      return notes;
-    }
-    LoopA: while (1) {
-      pitch_pos = Util.noteToNumber(this.all_posible_note, notes);
-      // console.log(notes);
-      // console.log(pitch_pos);
-      LoopB: for (let j = 1; j < pitch_pos.length - 1; j++) {
-        // console.log(pitch_pos[j - 1] + ' > ' + pitch_pos[j] + ' > ' + pitch_pos[j + 1]);
-        let curr = pitch_pos[j];
-        let next = pitch_pos[j + 1];
-        let prev = pitch_pos[j - 1];
-        let diff = Math.abs(prev - next);
-        if (prev == next) {
-          if (prev - curr > 2) {
-            notes[j] = this.all_posible_note[curr + 2];
-            // console.log('aaaaaaaaaaaaaaaaaaaaaaaa');
-            break LoopB;
-          } else if (prev - curr < -2) {
-            notes[j] = this.all_posible_note[curr - 2];
-            // console.log('bbbbbbbbbbbbbbbbbbbbbbb');
-
-            break LoopB;
-          }
-        } else if (prev > curr && next > curr) {
-          notes[j] = this.all_posible_note[curr + diff];
-          // console.log('cccccccccccccccccccccccc');
-          break LoopB;
-        } else if (
-          (prev == curr && next > curr + 1) ||
-          (next == curr && prev > curr + 1)
-        ) {
-          notes[j] = this.all_posible_note[curr + ~~(diff / 2)];
-          // console.log('dddddddddddddddddd');
-          break LoopB;
-        } else if (prev < curr && next < curr) {
-          notes[j] = this.all_posible_note[curr - diff];
-          // console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeee');
-          break LoopB;
-        } else if (
-          (prev == curr && next < curr - 1) ||
-          (next == curr && prev < curr - 1)
-        ) {
-          notes[j] = this.all_posible_note[curr - ~~(diff / 2)];
-          // console.log('ffffffffffffffffffffffffffff');
-          break LoopB;
-        }
-        if (j == pitch_pos.length - 2) {
-          break LoopA;
-        }
-      }
-      // console.log('----------------------------');
-    }
-    return notes;
-  }
-
   /**
    * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
    * 
-   * @param {string} str_pattern The numeric MIDI pitch value to convert.
    * @returns {string} The resulting symbolic note name.
    */
-  increaseOctave(notes, inc = 2) {
-    if (Array.isArray(notes))
-      return notes.map(note => {
-        return note.slice(0, note.length - 1) + (+note[note.length - 1] + inc);
-      })
-    return notes.slice(0, notes.length - 1) + (+notes[notes.length - 1] + inc);
-  }
-
-  
-  findMedium(patt, note) {
-    let count = -1;
-    let w = patt.split('').map(ch => {
-      if (ch == 'x') count++;
-      return this.all_posible_note.indexOf(note[count]);
-    });
-    let middle = ~~(_.reduce(w, function (sum, n) {
-      return sum + n;
-    }, 0) / w.length);
-    return middle;
-  }
-
-  findTickFromLength(length) {
-    return length / 32;
-  }
-
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} str_pattern The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
-  composeChordProgreesion(repeat = 1) {
+  composeChordProgreesion() {
     for (const key in this.chordProgressive) {
       this.chordProgressive[key].cadence = Util.randomElement(this.chordProgressive[key].cadence);
     }
-    // this.simpleChordProgression = this.ChordProgression.composeSimpleChord(this.key, this.song_part, this.chordProgressive);
     this.chordProgression = this.ChordProgression.composeVoicingChord(this.key, this.song_part, this.chordProgressive, this.barPerPart);
     this.chordProgression = this.Velocity.generateVelocityChord(this.chordProgression);
 
@@ -436,9 +303,6 @@ class MusicGenerator {
     return this.tempo;
   }
 
-  replaceAt(arr, index, replacement) {
-    return arr.substr(0, index) + replacement + arr.substr(index + replacement.length);
-  }
 }
 
 module.exports = MusicGenerator;

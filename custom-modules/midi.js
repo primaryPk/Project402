@@ -201,7 +201,7 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift) {
 		}
 
 		if (noteObj.note) {
-			if (noteObj.note.length > 1) { // check Chord
+			if (noteObj.note.length > 1) { // is Chord
 				if (!shift) {
 					noteObj.note.forEach(function (note, index) {
 						track.noteOn(channel, note, 0, noteObj.level[index]);
@@ -273,14 +273,14 @@ const midi = (music, fileName, binuaral = 0) => {
 		let chord = generateTrack(1, music.getChordProgression(), music.getTempo(), music.getInstrumentChord());
 		file.addTrack(chord);
 	} else {
-		let track_left_melody = generateTrack(0, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_LEFT);
+		let track_left_melody = generateTrack(0, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_RIGHT);
 		file.addTrack(track_left_melody);
-		let track_left_chord = generateTrack(2, music.getChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_LEFT);
+		let track_left_chord = generateTrack(2, music.getChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_RIGHT);
 		file.addTrack(track_left_chord);
 
-		let track_right_melody = generateTrack(1, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_RIGHT, binuaral);
+		let track_right_melody = generateTrack(1, melodies, music.getTempo(), music.getInstrumentMelody(), PAN_LEFT, binuaral);
 		file.addTrack(track_right_melody);
-		let track_right_chord = generateTrack(3, music.getChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_RIGHT, binuaral);
+		let track_right_chord = generateTrack(3, music.getChordProgression(), music.getTempo(), music.getInstrumentChord(), PAN_LEFT, binuaral);
 		file.addTrack(track_right_chord);
 	}
 
