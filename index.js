@@ -210,7 +210,7 @@ app.get('**', (req, res, next) => {
     console.log(file);
     console.log(req.ip);
 
-    var ip = req.ip.replace(/:|\./g, '_');
+    var ip = req.ip.replace(/[^a-zA-Z0-9]/g, '_');
 
     fs.stat(__dirname + '/pool/' + ip, function (err, stats) {
       if (err) {
