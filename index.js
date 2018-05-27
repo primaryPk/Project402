@@ -9,6 +9,13 @@ const express = require('express');
 const app = express();
 app.enable('trust proxy');
 
+fs.stat(__dirname + '/pool', function (err, stats) {
+  if (err) {
+    fs.mkdirSync('./pool');
+  }
+});
+
+
 const music = new MusicGenerator();
 
 const chord = [
