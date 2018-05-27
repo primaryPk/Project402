@@ -15,7 +15,6 @@ fs.stat(__dirname + '/pool', function (err, stats) {
   }
 });
 
-
 const music = new MusicGenerator();
 
 const chord = [
@@ -155,11 +154,7 @@ app.get('**', (req, res, next) => {
       },
     }
   };
-  res.freq = 0;
-  next();
-});
 
-app.get('**', (req, res, next) => {
   res.fact.init = {
     KeySignature: list_key,
     Tempo: tempo_slow,
@@ -173,6 +168,44 @@ app.get('**', (req, res, next) => {
   music.setFacts(res.fact);
   res.freq = 0;
   next();
+});
+
+app.get('/test/:newsong/:bi', (req, res) => {
+  var ip = 'test_' + req.ip.replace(/[^a-zA-Z0-9]/g, '_');
+  var dir = 'pool/' + ip;
+
+  if (req.params.newsong == 0) {
+    var bi = req.params.bi == 0 ? '' : 'bi';
+    res.sendFile(__dirname + '/' + dir + '/test' + bi + '.mid');
+  } else {
+    music.runEngine().then(() => {
+      music.init();
+
+      music.composeChordProgreesion();
+      music.composeMelody();
+
+      let file = 'song_test => ' +
+        music.getKeySig() + ' ' + music.getMotif() + ' ' +
+        music.getTempo() + ' ' +
+        Instrument[music.getInstrumentMelody()].name + ' ' +
+        Instrument[music.getInstrumentChord()].name + ' ' +
+        music.getSimpleChordProgression();
+      console.log(file);
+
+
+      fs.stat(__dirname + '/pool/' + ip, function (err, stats) {
+        if (err) {
+          fs.mkdirSync('./pool/' + ip);
+        }
+
+        midi(music, dir + '/test.mid', 0);
+        midi(music, dir + '/testbi.mid', 10);
+
+        var bi = req.params.bi == 0 ? '' : 'bi';
+        res.sendFile(__dirname + '/' + dir + '/test' + bi + '.mid');
+      });
+    });
+  }
 });
 
 app.get('/:inst/:freq', (req, res, next) => {
@@ -201,7 +234,7 @@ app.get('/:inst/:freq', (req, res, next) => {
   next();
 });
 
-app.get('**', (req, res, next) => {
+app.get('**', (req, res) => {
   music.runEngine().then(() => {
     music.init();
 
@@ -215,7 +248,6 @@ app.get('**', (req, res, next) => {
       Instrument[music.getInstrumentChord()].name + ' ' +
       music.getSimpleChordProgression();
     console.log(file);
-    console.log(req.ip);
 
     var ip = req.ip.replace(/[^a-zA-Z0-9]/g, '_');
 
