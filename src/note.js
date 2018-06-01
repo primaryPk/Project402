@@ -5,11 +5,6 @@ const Util = require('./util');
 
 class Note {
 
-  /**
-   * Convert a numeric *********************
-   * 
-   * @returns {Object} The resulting note file.
-   */
   generateNoteMajorScale() {
     const filepath = './storage/note.json';
     let notes = {};
@@ -22,11 +17,6 @@ class Note {
     return notes;
   }
 
-  /**
-   * Convert a numeric *********************
-   * 
-   * @returns {Object} The resulting note file.
-   */
   computeNoteMajorScale(){
     let notes = {};
     let major_scale = [1, 1, 0.5, 1, 1, 1, 0.5]; 

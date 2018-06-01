@@ -11,15 +11,6 @@ const Velocity = require('./velocity');
 
 class Melody {
 
-  /**
-   * Load file from storage
-   *
-   * @param {Object} noteListObj - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(noteListObj) {
     this.noteListObj = noteListObj;
     this.Velocity = new Velocity();
@@ -35,19 +26,9 @@ class Melody {
     return null;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} filepath The numeric MIDI pitch value to convert.
-   * @param {Function} compute The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   compose(key, instrument, song_part, motif, chordProgressObj, chordProgressRule) {
-    // console.log(InstrumentRange[instrument]);
 
     let all_possible_notes = this.generateAllPossibleNotes(key, instrument);
-
-    // console.log(_.chunk(all_possible_notes, 7));
 
     let melody_part = {};
     let velocity_part = {};

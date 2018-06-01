@@ -6,9 +6,6 @@ const Chord = require('./chord');
 
 class ChordProgression {
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").
-   */
   constructor(noteListObj) {
     this.noteListObj = noteListObj;
     this.Chord = new Chord(noteListObj);
@@ -25,15 +22,6 @@ class ChordProgression {
     ];
   }
 
-
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Object} chord_progress The numeric MIDI pitch value to convert.
-   * @param {Object} chords The numeric MIDI pitch value to convert.
-   * @param {number} repeat The numeric MIDI pitch value to convert.
-   * @returns {Array} The resulting symbolic note name.
-   */
   romanToNote(chordList, key) {
     let chords = this.simpleChord[key];
     if (Array.isArray(chordList)){
@@ -47,12 +35,6 @@ class ChordProgression {
     }
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   composeVoicingChord(key, song_part_list, song_part_obj, barPerPart = 1) {
     let chords = {};
 
@@ -64,16 +46,11 @@ class ChordProgression {
     let chordProgression = [];
     let progression = {};
     let before_chord = null;
-    // const wide_pattern = Util.randomElement(this.wide_patterns);
     const wide_pattern = Util.randomElement(this.wide_patterns);
     const note_octave = Util.generateNoteWithOctave(this.Chord.noteListObj[key].slice(0), 2, 6);
-    // [a,b,c#,e,f#..]
-    // [a3,b3,c#4,d4,e4,f#4..] <= noteList + Oct
-    // [e3, ] <= chord
-    // [a2,b2,c#3,d3,e3,f#3..] <= noteList + Oct
     _.uniq(song_part_list).forEach(part => {
       progression[part] = this.generateVoicingChordProgreesion(wide_pattern[part], song_part_obj[part], chords, before_chord, note_octave, barPerPart);
-      before_chord = _.last(progression[part].notes); // ***
+      before_chord = _.last(progression[part].notes);
     });
 
     song_part_list.forEach(part => {
@@ -87,12 +64,7 @@ class ChordProgression {
     return chordProgression;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
+
   generateVoicingChordProgreesion(wide, chord_progress, chords, before_chord, note_octave, repeat) {
     let progress = {
       notes: [],
@@ -122,7 +94,7 @@ class ChordProgression {
   selectChordVoicing(before_chord, chord, chords, note_octave, wide) {
     let before_chord_num = Util.noteToNumber(note_octave, before_chord);
 
-    let new_chordList = _.difference(chords[chord][wide], [before_chord]); // remove dup before chord
+    let new_chordList = _.difference(chords[chord][wide], [before_chord]);
     let new_chordList_num = new_chordList.map(chord => {
       return Util.noteToNumber(note_octave, chord);
     });
@@ -155,7 +127,7 @@ class ChordProgression {
       new_chordList = new_chordList_num;
     }
 
-    let before_level = this.findMedium(before_chord_num); // [0,2,4,7] => 4
+    let before_level = this.findMedium(before_chord_num);
     let chordList_level = new_chordList.map(chord => {
       return this.findMedium(chord);
     });
@@ -177,12 +149,6 @@ class ChordProgression {
       return new_chordList[item];
     });
 
-    // console.log(before_chord);
-    // console.log(item_nearest);
-    // console.log(chordList_level);
-    // console.log(new_chordList);
-    // console.log('---------------------');
-
     new_chordList = new_chordList.map(chord => {
       return Util.numberToNote(note_octave, chord);
     });
@@ -190,12 +156,6 @@ class ChordProgression {
     return Util.randomElement(new_chordList);
   }
 
-  /**
-   * Average
-   * 
-   * @param {Array<number>} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   findMedium(chord) {
     return ~~(_.reduce(chord, function (sum, n) {
       return sum + n;

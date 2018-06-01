@@ -6,15 +6,6 @@ const Util = require('../util');
 
 class SongPart {
 
-  /**
-   * Load file from storage
-   *
-   * @param {Object} all_possible_notes - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(key, all_possible_notes, motif, chordProgressObj, chordProgressRule) {
     this.key = key;
     this.all_possible_notes = all_possible_notes;
@@ -57,9 +48,6 @@ class SongPart {
         return e != undefined;
       })
     })
-    // console.log(before_note);
-    // console.log(tmp_motif.map(e => Util.numberToNote(this.all_possible_notes, e)));
-    // console.log('===============');
     
     let diff = _.flatten(tmp_motif.map(e => {
       let d = Math.abs(e[0] - before_note);
@@ -190,10 +178,6 @@ class SongPart {
           arr.push(possible_new_note_num[i])
         }        
       }
-      // console.log(this.chordProgressRule.cadence);
-      // console.log(possible_new_note);
-      // console.log(diff);
-      // console.log(_.last(melody[j - 1]));
 
       melody[j] = [Util.randomElement(arr)];
       pattern[j] = Const.n4;

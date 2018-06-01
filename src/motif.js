@@ -5,12 +5,6 @@ const Util = require('./util');
 
 class Motif {
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} str_pattern The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   generateMotif(motif) {
     let notes = [2, 4];
     let notes_up = [motif.notes.slice(0)];
@@ -40,12 +34,6 @@ class Motif {
     return motives;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} str_pattern The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   increaseTimeOfPattern(str_pattern) {
     let patterns = str_pattern.split('x');
     if (patterns[0] == '') {

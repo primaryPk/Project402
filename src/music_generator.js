@@ -25,9 +25,6 @@ class MusicGenerator {
     this.Velocity = new Velocity();
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4"). 
-   */
   init() {
     this.tempo = this.initAnything(this.temposFact);
     this.key = this.initAnything(this.keySigFact).toLowerCase();
@@ -46,12 +43,6 @@ class MusicGenerator {
     this.Velocity.setChordProgressive(this.chordProgressive);
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").
-   * 
-   * @param {number} min The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   initAnything(anything) {
     if (Array.isArray(anything)) {
       return Util.randomElement(anything);
@@ -62,13 +53,6 @@ class MusicGenerator {
     }
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").
-   * 
-   * @param {number} min The numeric MIDI pitch value to convert.
-   * @param {number} max The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   initRule() {
     let me = this;
     this.initializeRule = {
@@ -128,18 +112,10 @@ class MusicGenerator {
       priority: 5,
       onSuccess: (event, almanac) => {
         this.motifFact = this.facts.melody.motif;
-        // me.motif = new Motif().generateMotif(me.facts.melody.motif[1]);
       }
     }
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").
-   * 
-   * @param {number} min The numeric MIDI pitch value to convert.
-   * @param {number} max The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   initEngine() {
     this.engine = new Engine()
     this.engine.addOperator('allContains', (facts_value, rule_value) => {
@@ -236,11 +212,6 @@ class MusicGenerator {
     }
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @returns {string} The resulting symbolic note name.
-   */
   composeChordProgreesion() {
     for (const key in this.chordProgressive) {
       this.chordProgressive[key].cadence = Util.randomElement(this.chordProgressive[key].cadence);

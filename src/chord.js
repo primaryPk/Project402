@@ -6,26 +6,10 @@ const Graph = require('./graph');
 
 class Chord {
   
-  /**
-   * Load file from storage
-   *
-   * @param {Object} noteListObj - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(noteListObj) {
     this.noteListObj = noteListObj;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} filepath The numeric MIDI pitch value to convert.
-   * @param {Function} compute The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   generateChord(filepath, compute) {
     let chords = {};
     if (Util.isExists(filepath)) {
@@ -37,56 +21,25 @@ class Chord {
     return chords;
   }
 
-  
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} filepath The numeric MIDI pitch value to convert.
-   * @param {Function} compute The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   getSimpleChord() {
     return this.generateChord('./storage/simple_chord.json', this.computeSimpleChord);
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} filepath The numeric MIDI pitch value to convert.
-   * @param {Function} compute The numeric MIDI pitch value to convert.
-   * @returns {string} The resulting symbolic note name.
-   */
   getVoicingChord() {
-    // this.computeVoicingChord(this.noteListObj);
     return this.generateChord('./storage/voicing_chord.json', this.computeVoicingChord);
   }
 
-
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   findStartOctave(notes) {
     return (notes[0][0].toLowerCase() == 'a' || notes[0][0].toLowerCase() == 'b') ? 3 : 4;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   computeSimpleChord() {
     let chords = {};
     const gap = [0, 2, 2, 3];
     for (const key in this.noteListObj) {
       chords[key] = {};
-      console.log(this.noteListObj);
-
       const start = this.findStartOctave(this.noteListObj[key]);
-      let notes = Util.generateNoteWithOctave(this.noteListObj[key], start, 2); // key = c; [c4,d4,.......,b5]
+      let notes = Util.generateNoteWithOctave(this.noteListObj[key], start, 2);
       for (let i in Const.chordsName) {
         chords[key][Const.chordsName[i]] = this.computeChord(notes, gap, i);
       }
@@ -98,11 +51,6 @@ class Chord {
     return chords;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @returns {Object} The resulting symbolic note name.
-   */
   computeVoicingChord() {
     let chords = {};
     const gap = [0, 2, 2, 3];
@@ -118,49 +66,34 @@ class Chord {
     }
 
     for (const chord in allChords) {
-      // if(chord == 'dmin')
-      //   break;
       let type = chord.substring(chord.length - 3);
       let semitone = chord.substring(0, chord.length - 3);
       let notes_octave = null;
       let bass = '';
 
-      // cmaj
-      // semitone => c
-      // [c,d,e,f,g,a,b]
-      // dmin
-      // semitone => d 
-      // < key c  => dmin>
-      // [d,e,f#,g,a,b,c#]
-      // [d3...c#8]
-
       switch (type) {
         case 'maj':
           notes_octave = Util.generateNoteWithOctave(this.noteListObj[semitone].slice(0), 3, 4);
-          bass = notes_octave[0]; // c3, d3
+          bass = notes_octave[0];
           break;
         case 'min':
           semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 10) % 12];
           notes_octave = Util.generateNoteWithOctave(this.noteListObj[semitone].slice(0), 3, 5);
-          bass = notes_octave[1]; // d3, e3
+          bass = notes_octave[1];
           break;
         case 'dim':
           semitone = Const.semitone[(Const.semitone.indexOf(semitone) + 1) % 12];
           notes_octave = Util.generateNoteWithOctave(this.noteListObj[semitone].slice(0), 3, 5);
-          bass = notes_octave[6]; // b3, c#4
+          bass = notes_octave[6];
           break;
         default:
           break;
       }
 
-      // cmaj : [c e g]
-      // cmin : [c eb g]
       let base_chords = allChords[chord];
-      // console.log(base_chords);
       let base_chords_uniq = _.uniq(base_chords);
       let graph = new Graph();
       
-      // cmaj : [c3 e3 g3 ]
       let new_vertices = [bass];
       graph.addVertex(bass);
 
@@ -179,9 +112,7 @@ class Chord {
       }
 
       let chord_octave = Util.generateNoteWithOctave(base_chords_uniq, 3, 2);
-      // [c3 e3 g3 c4 e4 g4]
       let all_path = [];
-
       
       chord_octave.forEach(note => {
         all_path = _.concat(all_path, graph.findAllPath(note));
@@ -196,16 +127,10 @@ class Chord {
     return allVoicingChords;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   classifiedChord(noteListObj, chords){
     let result = [[],[],[]];
     chords.forEach(chord => {
-      let chord1 = Util.noteToNumber(noteListObj, chord); //[c3 e3 g3 c4] => [0,2,4,7]
+      let chord1 = Util.noteToNumber(noteListObj, chord);
       let min = Math.min(...chord1);
       let max = Math.max(...chord1);
       
@@ -220,23 +145,14 @@ class Chord {
     return result;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   filterChordByMusicRule(all_path, base_chords, notes_octave) {
     let base_chords_uniq = _.uniq(base_chords);
     let gap_rules_array = [12, 8, 8];
     let gap_rules = {}
     base_chords_uniq.forEach((key, i) => gap_rules[key] = gap_rules_array[i]);
 
-    all_path = all_path.filter(path => path.length == 4); //
+    all_path = all_path.filter(path => path.length == 4);
     let count_note = _.countBy(base_chords)
-    // [c e g e]
-    // {c:2 g:1 e:1}
-    // [c3 g3 c4 g4] => {c:2 g:2}
     all_path = all_path.filter(path => {
       return _.isEqual(count_note, _.countBy(path, Util.getPitch));
     });
@@ -259,18 +175,12 @@ class Chord {
     return all_path;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   filterChordByBinuaral(all_path, base_chords, notes_octave) {
     all_path = all_path.filter(path => {
-      if (Util.getPitch(path[0]) == base_chords[1]) { // 0 == e
-        if (Util.getPitch(path[1]) == base_chords[2]) { // 1 == g
+      if (Util.getPitch(path[0]) == base_chords[1]) { 
+        if (Util.getPitch(path[1]) == base_chords[2]) { 
           return true;
-        } else if (notes_octave.indexOf(path[3]) - notes_octave.indexOf(path[0]) < 15) { // last ห่าง first ไม่เกิน 15
+        } else if (notes_octave.indexOf(path[3]) - notes_octave.indexOf(path[0]) < 15) {
           return true;
         } else {
           return false;
@@ -280,8 +190,8 @@ class Chord {
     });
 
     all_path = all_path.filter(path => {
-      if (Util.getPitch(path[0]) == base_chords[2]) { // 0 == g
-        if (notes_octave.indexOf(path[1]) - notes_octave.indexOf(path[0]) < 12) { // 1 ห่าง 0 ไม่เกิน 12
+      if (Util.getPitch(path[0]) == base_chords[2]) {
+        if (notes_octave.indexOf(path[1]) - notes_octave.indexOf(path[0]) < 12) {
           return true;
         } else {
           return false;
@@ -293,23 +203,14 @@ class Chord {
     if (Util.isMinorChord(this.noteListObj[base_chords[0]], base_chords)){
       all_path = all_path.filter(path => {
         let tmp_path = Util.getPitch(path);
-        return tmp_path[0] == base_chords[0] // no triad
-                && tmp_path[1] == base_chords[1] // c -> eb only (not c -> g)
-                // && path[0].substr(path[0].length - 1) != '3'
+        return tmp_path[0] == base_chords[0]
+                && tmp_path[1] == base_chords[1]
       });
     }   
 
     return all_path;
   }
   
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {Array} notes The numeric MIDI pitch value to convert.
-   * @param {Array} gap The numeric MIDI pitch value to convert.
-   * @param {number} i number of chord.
-   * @returns {Object} The resulting symbolic note name.
-   */
   computeChord(notes, gap, i) {
     let chord = [];
     let pos = Number(i);

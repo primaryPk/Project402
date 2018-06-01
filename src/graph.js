@@ -7,23 +7,11 @@ class Graph {
     this.edges = {};
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} vertex The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   addVertex(vertex) {
     this.vertices[vertex] = true;
     this.edges[vertex] = {};
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} vertex1 The numeric MIDI pitch value to convert.
-   * @returns {number} The resulting symbolic note name.
-   */
   addEdge(vertex1, vertex2) {
     if (!this.hasVertex(vertex1))
       return console.error(vertex1 + ' is not vertex.');
@@ -33,12 +21,6 @@ class Graph {
     this.edges[vertex1][vertex2] = 1;
   }
 
-  /**
-   * Convert a numeric MIDI pitch value (e.g. 60) to a symbolic note name(e.g. "c4").   *
-   * 
-   * @param {string} vertex The numeric MIDI pitch value to convert.
-   * @returns {boolean} The resulting symbolic note name.
-   */
   hasVertex(vertex) {
     return this.vertices[vertex]
   }

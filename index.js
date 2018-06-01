@@ -2,14 +2,14 @@ const MusicGenerator = require('./src/music_generator');
 const midi = require('./custom-modules/midi');
 const Const = require('./config/music_constant');
 const Instrument = require('./config/instrument_range');
-const KeyC = require('./storage/note')['c'];
 const Motif = require('./src/motif');
+const Util = require('./src/util');
 const fs = require('fs');
 const express = require('express');
 const app = express();
 app.enable('trust proxy');
 
-fs.stat(__dirname + '/pool', function (err, stats) {
+fs.stat('./pool', function (err, stats) {
   if (err) {
     fs.mkdirSync('./pool');
   }
@@ -238,7 +238,6 @@ app.get('/:inst/:freq', (req, res, next) => {
 
   res.fact.init.InstrumentMelody = inst_m;
   res.fact.init.InstrumentChord = inst_c;
-
 
   music.setFacts(res.fact);
   res.freq = Number(req.params.freq);

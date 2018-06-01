@@ -103,7 +103,6 @@ module.exports = {
       },
       {
         all: [
-          getRuleChord('main'),
           getRuleChord('Intro'),
           getRuleChord('Verse'),
           getRuleChord('PreChorus'),

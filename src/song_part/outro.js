@@ -6,15 +6,6 @@ const SongPart = require('./songpart');
 
 class Outro extends SongPart {
 
-  /**
-   * Load file from storage
-   *
-   * @param {Object} all_possible_notes - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(key, all_possible_notes, chordProgressObj, chordProgressRule, lastNoteChorus) {
     super(key, all_possible_notes, null, chordProgressObj, chordProgressRule)
     this.lastNoteChorus = lastNoteChorus;

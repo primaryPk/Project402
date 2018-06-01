@@ -6,15 +6,6 @@ const SongPart = require('./songpart');
 
 class Chorus extends SongPart {
 
-  /**
-   * Load file from storage
-   *
-   * @param {Object} all_possible_notes - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(key, all_possible_notes, motif, chordProgressObj, chordProgressRule) {
     super(key, all_possible_notes, motif, chordProgressObj, chordProgressRule)
     this.melody = this.composeMelody();
@@ -40,7 +31,6 @@ class Chorus extends SongPart {
         if (melody[j].some(e => e < 0 || e >= this.all_possible_notes.length)) {
           c--;
           j--;
-          // console.log('Motif Up found -1');
         }
       }
     }
@@ -54,15 +44,11 @@ class Chorus extends SongPart {
         if (melody[j].some(e => e < 0 || e >= this.all_possible_notes.length)) {
           c--;
           j--;
-          // console.log('Motif Down found -1');
         }
       }
     }
     this.generateNoteCadence(pattern, melody, j);
 
-    // console.log(melody);
-    // console.log(melody.map(e => Util.numberToNote(this.all_possible_notes, e)));
-    // console.log(pattern);
     return {
       notes: Util.numberToNote(this.all_possible_notes, _.flatten(melody)),
       pattern: pattern.join('')

@@ -1,5 +1,4 @@
 const fs = require('fs');
-const assert = require('assert');
 const jsmidgen = require('./jsmidgen');
 const transpose = require('scribbletune/src/transpose');
 const semitone = require('../config/music_constant').semitone;

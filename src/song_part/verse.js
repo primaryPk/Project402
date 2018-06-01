@@ -7,15 +7,6 @@ const Motif = require('../motif');
 
 class Verse extends SongPart {
 
-  /**
-   * Load file from storage
-   *
-   * @param {Object} all_possible_notes - 
-   * {
-   *  c: [c,d,e,f...],
-   *  d: [d,e,f,g...],
-   * }
-   */
   constructor(key, all_possible_notes, motif, chordProgressObj, chordProgressRule, intro_motif) {
     super(key, all_possible_notes, motif, chordProgressObj, chordProgressRule)
     this.intro_motif = intro_motif;
@@ -24,7 +15,6 @@ class Verse extends SongPart {
 
 
   composeMelody() {
-    // console.log(this.intro_motif);
     let melody = [];
     let pattern = [];
     let phase = this.chordProgressRule.phase / 2;
@@ -49,7 +39,6 @@ class Verse extends SongPart {
           if (k == 10) {            
             this.intro_motif = null;
           }
-          // console.log('Verse Motif Up found -1');
         }
       }
     }
@@ -68,15 +57,10 @@ class Verse extends SongPart {
           if(k == 10){
             this.intro_motif = null;
           }          
-          // console.log('Verse Motif Down found -1');
         }
       }
     }
     this.generateNoteCadence(pattern, melody, j);
-
-    // console.log(melody);
-    // console.log(melody.map(e => Util.numberToNote(this.all_possible_notes, e)));
-    // console.log(pattern);
     
     return {
       notes: Util.numberToNote(this.all_possible_notes, _.flatten(melody)),
@@ -113,28 +97,6 @@ class Verse extends SongPart {
       }
     }
   }
-
-  // generatePattern(pattern){
-  //   if (!this.intro_motif){
-  //     return super.generatePattern(pattern);
-  //   }
-  //   if()
-  //   console.log(this.intro_motif.pattern.length);
-    
-  //   // if (pattern.length < 8) {
-  //   //   let miss = 8 - pattern.length;
-  //   //   let patt = _.shuffle(Util.randomElement(this.findPatternNote(miss)));
-  //   //   patt = patt.map(e => this.pattern_value[e]).join('');
-  //   //   pattern += patt;
-  //   // }
-  //   // if (pattern.length < 16) {
-  //   //   let miss = 16 - pattern.length;
-  //   //   let patt = _.shuffle(Util.randomElement(this.findPatternNote(miss)));
-  //   //   patt = patt.map(e => this.pattern_value[e]).join('');
-  //   //   pattern += patt;
-  //   // }
-  //   return pattern;
-  // }
 }
 
 module.exports = Verse;
