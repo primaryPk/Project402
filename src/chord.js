@@ -5,7 +5,7 @@ const Util = require('./util');
 const Graph = require('./graph');
 
 class Chord {
-  
+
   constructor(noteListObj) {
     this.noteListObj = noteListObj;
   }
@@ -93,7 +93,7 @@ class Chord {
       let base_chords = allChords[chord];
       let base_chords_uniq = _.uniq(base_chords);
       let graph = new Graph();
-      
+
       let new_vertices = [bass];
       graph.addVertex(bass);
 
@@ -113,11 +113,11 @@ class Chord {
 
       let chord_octave = Util.generateNoteWithOctave(base_chords_uniq, 3, 2);
       let all_path = [];
-      
+
       chord_octave.forEach(note => {
         all_path = _.concat(all_path, graph.findAllPath(note));
       });
-      
+
       all_path = this.filterChordByMusicRule(all_path, base_chords, notes_octave);
       all_path = this.filterChordByBinuaral(all_path, base_chords, notes_octave);
 
@@ -127,20 +127,24 @@ class Chord {
     return allVoicingChords;
   }
 
-  classifiedChord(noteListObj, chords){
-    let result = [[],[],[]];
+  classifiedChord(noteListObj, chords) {
+    let result = [
+      [],
+      [],
+      []
+    ];
     chords.forEach(chord => {
       let chord1 = Util.noteToNumber(noteListObj, chord);
       let min = Math.min(...chord1);
       let max = Math.max(...chord1);
-      
+
       if (max - min < 10) {
         result[0].push(chord)
       } else if (max - min < 15) {
         result[1].push(chord)
       } else {
         result[2].push(chord)
-      }      
+      }
     });
     return result;
   }
@@ -177,8 +181,8 @@ class Chord {
 
   filterChordByBinuaral(all_path, base_chords, notes_octave) {
     all_path = all_path.filter(path => {
-      if (Util.getPitch(path[0]) == base_chords[1]) { 
-        if (Util.getPitch(path[1]) == base_chords[2]) { 
+      if (Util.getPitch(path[0]) == base_chords[1]) {
+        if (Util.getPitch(path[1]) == base_chords[2]) {
           return true;
         } else if (notes_octave.indexOf(path[3]) - notes_octave.indexOf(path[0]) < 15) {
           return true;
@@ -199,18 +203,18 @@ class Chord {
       }
       return true;
     });
-    
-    if (Util.isMinorChord(this.noteListObj[base_chords[0]], base_chords)){
+
+    if (Util.isMinorChord(this.noteListObj[base_chords[0]], base_chords)) {
       all_path = all_path.filter(path => {
         let tmp_path = Util.getPitch(path);
-        return tmp_path[0] == base_chords[0]
-                && tmp_path[1] == base_chords[1]
+        return tmp_path[0] == base_chords[0] &&
+          tmp_path[1] == base_chords[1]
       });
-    }   
+    }
 
     return all_path;
   }
-  
+
   computeChord(notes, gap, i) {
     let chord = [];
     let pos = Number(i);

@@ -11,7 +11,6 @@ const PAN_RIGHT = 127;
 const BYTE = 128;
 const RANGE = BYTE * BYTE;
 const MIDDLE = RANGE / 2;
-// 2^7 midi = 200 cent
 const MIDI_UNIT = 200 / MIDDLE;
 const EXPRESSION = [60, 63, 66, 70, 80];
 
@@ -38,16 +37,9 @@ function shiftChord(chord, shift) {
 	});
 }
 
-function blendChord(chord, shift = 10) { // 'e3', 'g4', 'b4', 'e5'
-	let pitch = Util.getPitch(chord); // 'e', 'g', 'b', 'e'
+function blendChord(chord, shift = 10) {
+	let pitch = Util.getPitch(chord);
 	let count = _.countBy(pitch);
-	/*
-	{
-		'a' : 2,
-		'e' : 1,
-		'c#' : 1
-	}
-	*/
 	let key = null;
 	let blend = {};
 	let notes_oct = null;
@@ -55,23 +47,18 @@ function blendChord(chord, shift = 10) { // 'e3', 'g4', 'b4', 'e5'
 
 	for (const k in count) {
 		if (count[k] == 2) {
-			key = k; // a
+			key = k;
 			break;
 		}
 	}
 
-	if (Util.isMinorChordByVoicingChord(Note[key], pitch)) { // 'e', 'g', 'b', 'e' 
-		let oct = Util.getOctave(chord[0]); // 3
+	if (Util.isMinorChordByVoicingChord(Note[key], pitch)) {
+		let oct = Util.getOctave(chord[0]);
 		notes_oct = Util.generateNoteWithOctave(Note[Util.changePitchWithoutOctave(semitone, key, -2)], oct, 1);
-		// Util.changePitchWithoutOctave(semitone, key, -2) => 'd'
-		// notes_oct => 'd3', 'e3', 'f#3', 'g3', 'a3', 'b3', 'c#4'
-		// console.log(notes_oct);	
-
 		if (chord[1] != notes_oct[3]) {
 			oct++;
 		}
-		gather = perfectFifth(Note[key], key) + (oct - 3) // f# 4 a# 4 => c# 1,  f# 4 a#5 => c# 2
-		// console.log(gather);	// c#1
+		gather = perfectFifth(Note[key], key) + (oct - 3)
 
 	} else {
 		let oct1 = Util.getOctave(chord[0]);
@@ -92,50 +79,18 @@ function blendChord(chord, shift = 10) { // 'e3', 'g4', 'b4', 'e5'
 		gather = key + (oct - 2);
 	}
 
-	let note = jsmidgen.Util.midiPitchFromNote(gather); // 25
+	let note = jsmidgen.Util.midiPitchFromNote(gather);
 	blend = frequentToBlend(note, shift);
-	/*
-	{
-		note: 5,
-		msb: 45,
-		lsb: 18
-	}
-	*/
-	// if (Util.isMinorChordByVoicingChord(Note[key], pitch)) {
-	// console.log(chord);
-	// console.log(blend.note);
-	// }
 
 	blend.note = shiftChord(chord, blend.note);
-	/*
-	{
-		note: ['e3', 'g#3', 'c4', 'e4'],
-		msb: 45,
-		lsb: 18
-	}
-	*/
-
 	return blend;
 }
 
 function frequentToBlend(note, shift = 10) {
-	// console.log('------------------------');
-	// console.log(note);
-
-	// c1 => 32
-	// 42 => e1
-
-	// c1 => e1 = 511
-	// n => 5 semitone
-	// cents => 11 cent
-
-
 
 	let f = noteToFrequency(note) + shift;
 	let d = frequencyToNote(f);
 	let cents = (d - note) * 100;
-	// console.log(cents);
-
 	let n = 0;
 
 	if (cents >= 100) {
@@ -147,9 +102,6 @@ function frequentToBlend(note, shift = 10) {
 	}
 
 	let blend = centsToBlend(cents)
-	// 100 : 11
-	// 127*127 : ?
-
 	return {
 		note: n,
 		msb: blend.msb,
@@ -195,8 +147,8 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift) {
 			track.setExpression(channel, EXPRESSION[size - 1 - i]);
 		}
 
-		if (i == size -1){
-			noteObj.length *= 2;	
+		if (i == size - 1) {
+			noteObj.length *= 2;
 		}
 
 		if (noteObj.note) {
@@ -255,11 +207,7 @@ function generateTrack(channel, notes, tempo, instrument, pan, shift) {
 	return track
 }
 
-/**
- * Take an array of note objects to generate a MIDI file in the same location as this method is called
- * @param  {Array} notes    Notes are in the format: {note: ['c3'], level: 127, length: 64}
- * @param  {String} fileName If a filename is not provided, then `music.mid` is used by default
- */
+
 const midi = (music, fileName, binuaral = 0) => {
 	let melodies = music.getMelody();
 

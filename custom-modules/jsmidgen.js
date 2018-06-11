@@ -1,14 +1,14 @@
 const jsmidgen = require('jsmidgen');
 
 jsmidgen.Track.prototype.setBlend = jsmidgen.Track.prototype.blend = function (channel, msb, lsb) {
-    this.events.push(new jsmidgen.Event({
-      type: jsmidgen.Event.PITCH_BEND,
-      channel: channel,
-      param1: lsb,
-      param2: msb
-    }));
-    return this;
-  };
+  this.events.push(new jsmidgen.Event({
+    type: jsmidgen.Event.PITCH_BEND,
+    channel: channel,
+    param1: lsb,
+    param2: msb
+  }));
+  return this;
+};
 
 jsmidgen.Track.prototype.setPan = jsmidgen.Track.prototype.pan = function (channel, pan) {
   this.events.push(new jsmidgen.Event({
@@ -19,7 +19,6 @@ jsmidgen.Track.prototype.setPan = jsmidgen.Track.prototype.pan = function (chann
   }));
   return this;
 };
-
 
 jsmidgen.Track.prototype.setExpression = jsmidgen.Track.prototype.expression = function (channel, expression) {
   this.events.push(new jsmidgen.Event({
@@ -32,4 +31,3 @@ jsmidgen.Track.prototype.setExpression = jsmidgen.Track.prototype.expression = f
 };
 
 module.exports = jsmidgen;
-
